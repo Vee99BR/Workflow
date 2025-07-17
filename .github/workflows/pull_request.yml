@@ -46,6 +46,7 @@ jobs:
 
       - name: Generate changelog
         run: |
+          sudo apt install -y python3-requests
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
           ./changelog/pr.sh > changelog.md
 
