@@ -48,6 +48,7 @@ jobs:
         run: |
           sudo apt install -y python3-requests
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
+          export ID=${FORGEJO_NUMBER}-${FORGEJO_REF}
           ./changelog/pr.sh > changelog.md
 
       - name: Delete Previous Release

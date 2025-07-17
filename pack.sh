@@ -9,22 +9,22 @@ fi
 
 for arch in $ARCHES
 do
-  cp linux-$arch/*.AppImage "artifacts/Eden-Linux-${FORGEJO_REF}-${arch}.AppImage"
+  cp linux-$arch/*.AppImage "artifacts/Eden-Linux-${ID}-${arch}.AppImage"
   if [ "$DEVEL" = "false" ]; then
-    cp linux-$arch/*.AppImage.zsync "artifacts/Eden-Linux-${FORGEJO_REF}-${arch}.AppImage.zsync"
+    cp linux-$arch/*.AppImage.zsync "artifacts/Eden-Linux-${ID}-${arch}.AppImage.zsync"
   fi
 done
 
-cp android/*.apk artifacts/Eden-Android-${FORGEJO_REF}.apk
+cp android/*.apk artifacts/Eden-Android-${ID}.apk
 
 for arch in amd64 # arm64
 do
-  cp windows-$arch/*.zip artifacts/Eden-Windows-${FORGEJO_REF}-${arch}.zip
+  cp windows-$arch/*.zip artifacts/Eden-Windows-${ID}-${arch}.zip
 done
 
 if [ -d "source" ]; then
   for ext in zip tar.zst
   do
-    cp source/source.$ext artifacts/Eden-Source-${FORGEJO_REF}.$ext
+    cp source/source.$ext artifacts/Eden-Source-${ID}.$ext
   done
 fi

@@ -30,8 +30,6 @@ win() {
   echo
 }
 
-PR_API_URL="https://git.eden-emu.dev/api/v1/repos/eden-emu/eden/pulls"
-
 changelog() {
   echo "## Changelog"
   echo

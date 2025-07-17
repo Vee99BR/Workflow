@@ -45,6 +45,7 @@ jobs:
       - name: Generate changelog
         run: |
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
+          export ID=${FORGEJO_REF}
           ./changelog/master.sh > changelog.md
 
       - name: Delete Previous Release
