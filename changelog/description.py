@@ -16,8 +16,8 @@ def get_pr_json():
 def get_pr_description():
     try:
         pr_json = get_pr_json()
-        return pr_json.get("body", "")
+        return pr_json.get("body", "No changelog provided.")
     except:
-        return ""
+        return "No changelog provided."
 
 print(get_pr_description())
