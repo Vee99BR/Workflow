@@ -10,7 +10,7 @@ linux() {
 
   echo -n "| "
   echo -n "[$PRETTY_ARCH](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${TAG}-${ARCH}.AppImage) "
-  echo -n "([zsync](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${TAG}-${ARCH}.AppImage.zsync) | "
+  echo -n "([zsync](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${TAG}-${ARCH}.AppImage.zsync)) | "
   echo -n "$DESCRIPTION |"
   echo
 }
