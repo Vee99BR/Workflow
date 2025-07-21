@@ -9,7 +9,7 @@ EOF
 if [ "$1" = "pull_request" ]; then
   cat << EOF >> $GITHUB_STEP_SUMMARY
 - PR #${FORGEJO_NUMBER}
-- Title: `${FORGEJO_TITLE}`
+- Title: $FORGEJO_TITLE
 - [URL]($FORGEJO_PR_URL)
 EOF
 fi
