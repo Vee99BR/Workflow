@@ -30,7 +30,7 @@ changelog() {
   echo
 }
 
-echo "This is ref \`$FORGEJO_REF\` of Eden's master branch."
+echo "This is ref [\`$FORGEJO_REF\`](https://git.eden-emu.dev/eden-emu/eden/commit/$FORGEJO_REF) of Eden's master branch."
 echo
 changelog
 echo "## Packages"

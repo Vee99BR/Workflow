@@ -9,7 +9,8 @@ linux() {
   DESCRIPTION="$3"
 
   echo -n "| "
-  echo -n "[$PRETTY_ARCH](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${TAG}-${ARCH}.AppImage) | "
+  echo -n "[$PRETTY_ARCH](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${TAG}-${ARCH}.AppImage) "
+  echo -n "([zsync](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${TAG}-${ARCH}.AppImage.zsync) | "
   echo -n "$DESCRIPTION |"
   echo
 }
@@ -33,6 +34,7 @@ echo "### Linux"
 echo
 echo "Linux packages are distributed via AppImage. Each build is optimized for a specific architecture."
 echo "See the *Description* column for more info. Note that legacy builds will always work on newer systems."
+echo "zsync files are provided for use with certain AppImage updaters."
 echo
 echo "| Build | Description |"
 echo "| ----- | ----------- |"

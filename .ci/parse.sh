@@ -14,7 +14,6 @@ case "$1" in
 
     echo "FORGEJO_CLONE_URL=$(echo "$PAYLOAD_JSON" | jq -r '.clone_url')" >> $GITHUB_ENV
     echo "FORGEJO_NUMBER=$(echo "$PAYLOAD_JSON" | jq -r '.number')" >> $GITHUB_ENV
-    echo "FORGEJO_REPOSITORY=$(echo "$PAYLOAD_JSON" | jq -r '.repository')" >> $GITHUB_ENV
     echo "FORGEJO_TITLE=$(echo "$PAYLOAD_JSON" | jq -r '.title')" >> $GITHUB_ENV
     echo "FORGEJO_PR_URL=$(echo "$PAYLOAD_JSON" | jq -r '.url')" >> $GITHUB_ENV
     ;;
