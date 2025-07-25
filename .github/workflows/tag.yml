@@ -1,4 +1,4 @@
-name: Create Release
+name: Create Tag Release
 
 on:
   repository_dispatch:
