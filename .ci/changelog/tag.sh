@@ -1,7 +1,7 @@
 #!/bin/sh -ex
 
 BASE_DOWNLOAD_URL="https://github.com/eden-emulator/Releases/releases/download"
-TAG="$FORGEJO_TAG"
+TAG="$FORGEJO_REF"
 
 linux() {
   ARCH="$1"
@@ -26,9 +26,23 @@ win() {
   echo
 }
 
+src() {
+  EXT="$1"
+  DESCRIPTION="$2"
+
+  echo -n "| "
+  echo -n "[$EXT](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Source-${TAG}.${EXT}) | "
+  echo -n "$DESCRIPTION |"
+  echo
+}
+
 echo "## Changelog"
 echo
 echo "## Packages"
+echo
+echo "Desktop builds will automatically put data in \`~/.local/share/eden\` on Linux, or "
+echo "\`%appdata%\\eden\` on Windows. You may optionally create a \`user\` directory in the "
+echo "same directory as the executable/AppImage to store data there instead."
 echo
 echo "### Linux"
 echo
@@ -42,8 +56,8 @@ linux legacy "amd64 (legacy)" "For CPUs older than 2013 or so"
 linux amd64 "amd64" "For any modern AMD or Intel CPU"
 linux steamdeck "Steam Deck" "For Steam Deck and other >= Zen 2 AMD CPUs"
 linux rog-ally "ROG Ally X" "For ROG Ally X and other >= Zen 4 AMD CPUs"
-linux aarch64 "armv8-a" "For ARM CPUs made in mid-2021 or earlier"
-linux armv9 "armv9-a" "For ARM CPUs made in late 2021 or later"
+linux aarch64 "armv8-a (WIP)" "For ARM CPUs made in mid-2021 or earlier"
+linux armv9 "armv9-a (WIP)" "For ARM CPUs made in late 2021 or later"
 echo
 echo "### Windows"
 echo
@@ -61,3 +75,17 @@ echo "Android comes in a single APK."
 echo
 echo "[Android APK](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Android-${TAG}.apk)"
 echo
+echo "### Source"
+echo
+echo "Contains all source code, git history, and branches at the time of release."
+echo
+echo "| File | Description |"
+echo "| ---- | ----------- |"
+src "zip" "Source as a zip archive (all platforms)"
+src "tar.zst" "Source as a zstd-compressed tarball (Windows requires 7zip)"
+echo
+echo "### Other Platforms"
+echo
+echo "Other platforms, including FreeBSD, Solaris (OpenIndiana), and macOS are "
+echo "able to be built from source, but are not available for download at this time. "
+echo "Stay tuned!"
