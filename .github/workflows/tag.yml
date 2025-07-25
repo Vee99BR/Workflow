@@ -32,7 +32,7 @@ jobs:
         uses: actions/download-artifact@v4
 
       - name: Parse Forgejo payload
-        shell: bash
+        uses: ./.github/workflows/parse
         with:
           build-id: tag
 
@@ -61,8 +61,8 @@ jobs:
           body_path: ./changelog.md
           prerelease: false
           draft: true
-          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
           generate_release_notes: false
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
           fail_on_unmatched_files: false
           make_latest: true
           files: |
