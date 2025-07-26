@@ -36,7 +36,7 @@ changelog
 echo "## Packages"
 echo
 echo "Desktop builds will automatically put data in \`~/.local/share/eden\` on Linux, or "
-echo "\`%appdata%\eden\` on Windows. You may optionally create a \`user\` directory in the "
+echo "\`%APPDATA%/eden\` on Windows. You may optionally create a \`user\` directory in the "
 echo "same directory as the executable/AppImage to store data there instead."
 echo
 echo ">[!WARNING]"
