@@ -45,7 +45,6 @@ pacman -Syu --noconfirm \
 		python-pip \
 		qt6-tools \
 		qt6-wayland \
-		sdl2 \
 		spirv-headers \
 		strace \
 		unzip \
