@@ -115,6 +115,9 @@ if [ "$ARCH" = 'aarch64' ]; then
 	echo 'SHARUN_ALLOW_SYS_VKICD=1' > ./.env
 fi
 
+# Wayland is mankind's worst invention, perhaps only behind war
+echo 'QT_QPA_PLATFORM=xcb' >> ./.env
+
 # Workaround for Gentoo
 if [ -d "shared/libproxy" ]; then
 	cp shared/libproxy/* lib/

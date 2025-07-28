@@ -50,6 +50,11 @@ echo "Linux packages are distributed via AppImage. Each build is optimized for a
 echo "See the *Description* column for more info. Note that legacy builds will always work on newer systems."
 echo "zsync files are provided for use with certain AppImage updaters."
 echo
+echo ">[!WARNING]"
+echo ">By default, the AppImages enforce the \`xcb\` platform for Qt. Wayland causes a significant "
+echo ">amount of issues that simply can't be solved on our end. You may change it to Wayland if you "
+echo ">wish, but expect things to break. You will only receive limited support if using Wayland."
+echo
 echo "| Build | Description |"
 echo "| ----- | ----------- |"
 linux legacy "amd64 (legacy)" "For CPUs older than 2013 or so"
