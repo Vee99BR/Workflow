@@ -45,15 +45,6 @@ jobs:
       - name: Clone
         shell: bash
         run: ./.ci/clone.sh false
-
-      - name: Set up CPM cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/eden/.cache
-          key: ${{ runner.os }}-cpm-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-cpm-
         
       - name: Pack
         run: |
