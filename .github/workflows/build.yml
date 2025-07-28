@@ -128,9 +128,9 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/eden/.cache
-          key: ${{ runner.os }}-cpm-${{ github.run_id }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-cpm-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-cpm-
+            ${{ runner.os }}-${{ matrix.arch }}-cpm-
 
       - name: Build
         shell: bash
@@ -212,9 +212,9 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/eden/.cache
-          key: ${{ runner.os }}-cpm-${{ github.run_id }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-cpm-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-cpm-
+            ${{ runner.os }}-${{ matrix.arch }}-cpm-
 
       - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
