@@ -63,4 +63,8 @@ rm -f bin/*.pdb
 set -e
 
 $WINDEPLOYQT --release --no-compiler-runtime --no-opengl-sw --no-system-dxc-compiler --no-system-d3d-compiler --dir pkg bin/eden.exe
+
+# Fixes dark mode being forced automatically even when light theme is set in app settings.
+echo -e "[Platforms]\nWindowsArguments = darkmode=0" > bin/qt.conf
+
 cp bin/* pkg
