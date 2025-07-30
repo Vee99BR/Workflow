@@ -25,6 +25,16 @@ win() {
   echo
 }
 
+src() {
+  EXT="$1"
+  DESCRIPTION="$2"
+
+  echo -n "| "
+  echo -n "[$EXT](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Source-${TAG}.${EXT}) | "
+  echo -n "$DESCRIPTION |"
+  echo
+}
+
 changelog() {
   echo "## Changelog"
   echo
@@ -77,4 +87,13 @@ echo
 echo "Android comes in a single APK."
 echo
 echo "[Android APK](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Android-${FORGEJO_REF}.apk)"
+echo
+echo "### Source"
+echo
+echo "Contains all source code, submodules, and CPM cache at the time of release."
+echo
+echo "| File | Description |"
+echo "| ---- | ----------- |"
+src "zip" "Source as a zip archive (all platforms)"
+src "tar.zst" "Source as a zstd-compressed tarball (Windows requires 7zip)"
 echo

@@ -61,7 +61,8 @@ pacman -Syu --noconfirm \
 		xcb-util-wm \
 		xorg-server-xvfb \
 		zip \
-		zsync
+		zsync \
+		zydis
 
 if [ "$(uname -m)" = 'x86_64' ]; then
 		pacman -Syu --noconfirm vulkan-intel haskell-gnutls svt-av1

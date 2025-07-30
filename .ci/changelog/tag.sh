@@ -82,7 +82,7 @@ echo "[Android APK](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Android-${TAG}.apk)"
 echo
 echo "### Source"
 echo
-echo "Contains all source code, git history, and branches at the time of release."
+echo "Contains all source code, submodules, and CPM cache at the time of release."
 echo
 echo "| File | Description |"
 echo "| ---- | ----------- |"
