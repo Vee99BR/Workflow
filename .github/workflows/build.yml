@@ -6,7 +6,7 @@ on:
       build-type:
         description: 'What build type to use (e.g. RelWithDebInfo, Release)'
         type: string
-        default: 'RelWithDebInfo'
+        default: 'Release'
       devel:
         description: 'Development mode (disables update checker, adds nightly qualifier)'
         type: boolean
