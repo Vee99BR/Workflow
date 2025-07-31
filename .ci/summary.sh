@@ -3,7 +3,7 @@
 cat << EOF >> $GITHUB_STEP_SUMMARY
 ## Job Summary
 - Triggered By: $1
-- Ref: [\`$FORGEJO_REF\`](https://git.eden-emu.dev/eden-emu/eden/commits/commit/$FORGEJO_REF)
+- Ref: [\`$FORGEJO_REF\`](https://git.eden-emu.dev/eden-emu/eden/commit/$FORGEJO_REF)
 EOF
 
 if [ "$1" = "pull_request" ]; then
