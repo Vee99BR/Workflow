@@ -18,6 +18,6 @@ done
 cd eden
 git reset --hard $FORGEJO_REF
 
-if [ "$1" = "true" ]; then
-  git submodule update --init --recursive
-fi
+# if [ "$1" = "true" ]; then
+git submodule update --init --recursive
+# fi
