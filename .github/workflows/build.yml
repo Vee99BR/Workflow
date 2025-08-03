@@ -53,11 +53,10 @@ jobs:
 
       - name: Configure
         run: |
-          cd eden
           ./.ci/source/configure.sh
-          rm -rf build
+          rm -rf eden/build
           STEAMDECK=true ./.ci/source/configure.sh
-          rm -rf build
+          rm -rf eden/build
 
       # TODO
       # - name: Configure (Solaris)
@@ -69,7 +68,7 @@ jobs:
 
       - name: Pack
         run: ./.ci/source/pack.sh
-                  
+
       - name: Upload source
         uses: actions/upload-artifact@v4.6.2
         with:

@@ -2,6 +2,7 @@
 
 # Configures CMake in different "presets" to get every possible build type,
 # thus caching every potential CPM call.
+cd eden
 
 if [ "$STEAMDECK" = "true"]; then
   cmake -S . -B build \
