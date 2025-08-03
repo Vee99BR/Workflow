@@ -24,6 +24,7 @@ pacman -Syu --noconfirm \
 		base-devel \
 		boost \
 		boost-libs \
+		catch2 \
 		cmake \
 		curl \
 		enet \
