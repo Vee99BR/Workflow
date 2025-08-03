@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Configures CMake in different "presets" to get every possible build type,
+# thus caching every potential CPM call.
+
+if [ "$STEAMDECK" = "true"]; then
+  cmake -S . -B build \
+    -DUSE_DISCORD_PRESENCE=ON \
+    -DYUZU_USE_BUNDLED_VCPKG=OFF \
+    -DYUZU_USE_BUNDLED_QT=OFF \
+    -DYUZU_USE_BUNDLED_SDL2=OFF \
+    -DYUZU_USE_EXTERNAL_SDL2=ON \
+    -DYUZU_USE_BUNDLED_FFMPEG=ON \
+    -DYUZU_SYSTEM_PROFILE=steamdeck \
+    -DBUILD_TESTING=OFF \
+    -DYUZU_TESTS=OFF \
+    -DDYNARMIC_TESTS=OFF \
+    -DYUZU_USE_QT_MULTIMEDIA=OFF \
+    -DYUZU_USE_QT_WEB_ENGINE=OFF
+else
+  cmake -S . -B build \
+    -DUSE_DISCORD_PRESENCE=ON \
+    -DYUZU_USE_BUNDLED_VCPKG=OFF \
+    -DYUZU_USE_BUNDLED_QT=OFF \
+    -DYUZU_USE_BUNDLED_SDL2=OFF \
+    -DYUZU_USE_EXTERNAL_SDL2=ON \
+    -DYUZU_USE_BUNDLED_FFMPEG=ON \
+    -DBUILD_TESTING=OFF \
+    -DYUZU_TESTS=OFF \
+    -DDYNARMIC_TESTS=OFF \
+    -DYUZU_USE_QT_MULTIMEDIA=OFF \
+    -DYUZU_USE_QT_WEB_ENGINE=OFF
+fi
