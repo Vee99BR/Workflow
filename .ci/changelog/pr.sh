@@ -51,7 +51,7 @@ if [ "$GITHUB_ENV" != "" ]; then
   echo "FORGEJO_TITLE=$FORGEJO_TITLE" >> $GITHUB_ENV
 fi
 
-echo "This is pull request number [$FORGEJO_NUMBER]($FORGEJO_PR_URL), ref \`$FORGEJO_REF\` of Eden."
+echo "This is pull request number [$FORGEJO_NUMBER]($FORGEJO_PR_URL), ref [\`$FORGEJO_REF\`](https://git.eden-emu.dev/eden-emu/eden/commit/$FORGEJO_REF) of Eden."
 echo
 changelog
 echo "## Packages"
