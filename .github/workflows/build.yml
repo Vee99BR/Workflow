@@ -203,6 +203,7 @@ jobs:
       - name: Parse Forgejo payload
         shell: bash
         run: |
+          pip install requests
           export PAYLOAD_JSON='${{ toJSON(github.event.client_payload) }}'
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
           ./.ci/parse.sh ${{ inputs.build-id }}
@@ -274,7 +275,7 @@ jobs:
           ./.ci/deps/android.sh
 
       - name: Parse Forgejo payload
-        shell: bash
+        shell: sh
         run: |
           export PAYLOAD_JSON='${{ toJSON(github.event.client_payload) }}'
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}

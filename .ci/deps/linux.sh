@@ -43,14 +43,14 @@ pacman -Syu --noconfirm \
 		patchelf \
 		pulseaudio \
 		pulseaudio-alsa \
-		python-pip \
+		python-requests \
 		qt6ct \
 		qt6-tools \
 		qt6-wayland \
 		spirv-headers \
 		strace \
 		unzip \
-  		ffnvcodec-headers \
+		ffnvcodec-headers \
 		vulkan-headers \
 		vulkan-mesa-layers \
 		vulkan-nouveau \
