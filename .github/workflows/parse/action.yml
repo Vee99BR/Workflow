@@ -14,4 +14,5 @@ runs:
       shell: bash
       run: |
         export PAYLOAD_JSON='${{ toJSON(github.event.client_payload) }}'
-        FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }} ./.ci/parse.sh ${{ inputs.build-id }}
+        export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
+        ./.ci/parse.sh ${{ inputs.build-id }}
