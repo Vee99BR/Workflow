@@ -1,6 +1,5 @@
 #!/bin/bash -x
 
-rm $GITHUB_ENV
 echo $PAYLOAD_JSON
 
 case "$1" in

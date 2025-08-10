@@ -1,4 +1,3 @@
-#!/bin/sh -ex
 
 cat << EOF >> $GITHUB_STEP_SUMMARY
 ## Job Summary
@@ -7,8 +6,7 @@ cat << EOF >> $GITHUB_STEP_SUMMARY
 EOF
 
 if [ "$1" = "pull_request" ]; then
-  cat << EOF >> $GITHUB_STEP_SUMMARY
-- PR #[${FORGEJO_NUMBER}]($FORGEJO_PR_URL)
-- Title: $FORGEJO_TITLE
-EOF
+echo "- PR #[${FORGEJO_NUMBER}]($FORGEJO_PR_URL)" >> $GITHUB_STEP_SUMMARY
+echo -n "- Title: " >> $GITHUB_STEP_SUMMARY
+echo $FORGEJO_TITLE >> $GITHUB_STEP_SUMMARY
 fi
