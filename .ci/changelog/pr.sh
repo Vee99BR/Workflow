@@ -3,11 +3,6 @@
 BASE_DOWNLOAD_URL="https://github.com/Eden-CI/PR/releases/download"
 TAG=${FORGEJO_NUMBER}-${FORGEJO_REF}
 
-if [ "$FORGEJO_TOKEN" = "" ]; then
-  echo "You must supply a Forgejo API Token via the FORGEJO_TOKEN environment variable."
-  exit 1
-fi
-
 linux() {
   ARCH="$1"
   PRETTY_ARCH="$2"

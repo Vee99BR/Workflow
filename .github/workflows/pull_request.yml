@@ -50,6 +50,15 @@ jobs:
         run: |
           sudo apt install -y python3-requests
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
+
+          UNESCAPED_TITLE=$(eval 'echo "$FORGEJO_TITLE"')
+          echo "FORGEJO_TITLE=$UNESCAPED_TITLE" >> $GITHUB_ENV
+          export FORGEJO_TITLE=$UNESCAPED_TITLE
+
+          UNESCAPED_BODY=$(eval 'echo "$FORGEJO_BODY"')
+          echo "FORGEJO_BODY=$UNESCAPED_BODY" >> $GITHUB_ENV
+          export FORGEJO_BODY=$UNESCAPED_BODY
+          
           ./.ci/changelog/pr.sh > changelog.md
 
       - name: Release (sha)
