@@ -1,3 +1,4 @@
+#!/bin/sh -ex
 
 cat << EOF >> $GITHUB_STEP_SUMMARY
 ## Job Summary
