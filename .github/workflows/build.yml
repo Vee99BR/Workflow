@@ -48,22 +48,6 @@ jobs:
       
       - name: Create job summary
         run: |
-          UNESCAPED_TITLE=$(echo "$FORGEJO_TITLE")
-          echo "FORGEJO_TITLE=$UNESCAPED_TITLE" >> $GITHUB_ENV
-
-          echo $FORGEJO_TITLE
-          echo $UNESCAPED_TITLE
-
-          export FORGEJO_TITLE=$UNESCAPED_TITLE
-
-          UNESCAPED_BODY=$(echo "$FORGEJO_BODY")
-          echo "FORGEJO_BODY=$UNESCAPED_BODY" >> $GITHUB_ENV
-
-          echo $FORGEJO_BODY
-          echo $UNESCAPED_BODY
-          
-          export FORGEJO_BODY=$UNESCAPED_BODY
-
           ./.ci/summary.sh ${{ inputs.build-id }}
 
       - name: Clone
