@@ -32,9 +32,11 @@ jobs:
         uses: actions/download-artifact@v4
 
       - name: Parse Forgejo payload
-        uses: ./.github/workflows/parse
-        with:
-          build-id: tag
+        shell: bash
+        run: |
+          export PAYLOAD_JSON='${{ toJSON(github.event.client_payload) }}'
+          export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
+          ./.ci/parse.sh tag
 
       - name: Set environment variables
         run: |
