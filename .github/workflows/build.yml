@@ -45,6 +45,22 @@ jobs:
           export PAYLOAD_JSON='${{ toJSON(github.event.client_payload) }}'
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
           ./.ci/parse.sh ${{ inputs.build-id }}
+
+          UNESCAPED_TITLE=$(echo "$FORGEJO_TITLE")
+          echo "FORGEJO_TITLE=$UNESCAPED_TITLE" >> $GITHUB_ENV
+
+          echo $FORGEJO_TITLE
+          echo $UNESCAPED_TITLE
+
+          export FORGEJO_TITLE=$UNESCAPED_TITLE
+
+          UNESCAPED_BODY=$(echo "$FORGEJO_BODY")
+          echo "FORGEJO_BODY=$UNESCAPED_BODY" >> $GITHUB_ENV
+
+          echo $FORGEJO_BODY
+          echo $UNESCAPED_BODY
+          
+          export FORGEJO_BODY=$UNESCAPED_BODY
       
       - name: Create job summary
         run: ./.ci/summary.sh ${{ inputs.build-id }}
