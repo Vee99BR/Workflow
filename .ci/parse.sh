@@ -11,11 +11,20 @@ case "$1" in
     ;;
   pull_request)
     FORGEJO_REF=$(echo "$PAYLOAD_JSON" | jq -r '.ref')
+    FORGEJO_NUMBER=$(echo "$PAYLOAD_JSON" | jq -r '.number')
 
     echo "FORGEJO_CLONE_URL=$(echo "$PAYLOAD_JSON" | jq -r '.clone_url')" >> $GITHUB_ENV
-    echo "FORGEJO_NUMBER=$(echo "$PAYLOAD_JSON" | jq -r '.number')" >> $GITHUB_ENV
-    echo "FORGEJO_TITLE=$(echo "$PAYLOAD_JSON" | jq -r '.title')" >> $GITHUB_ENV
+    echo "FORGEJO_NUMBER=$FORGEJO_NUMBER" >> $GITHUB_ENV
     echo "FORGEJO_PR_URL=$(echo "$PAYLOAD_JSON" | jq -r '.url')" >> $GITHUB_ENV
+
+    IFS= read -r FORGEJO_TITLE < <(FIELD=title DEFAULT_MSG="No title provided" python3 .ci/changelog/pr_field.py)
+    IFS= read -r FORGEJO_BODY < <(FIELD=body DEFAULT_MSG="No changelog provided" python3 .ci/changelog/pr_field.py)
+
+    ESCAPED_TITLE=$(printf '%q' "$FORGEJO_TITLE")
+    ESCAPED_BODY=$(printf '%q' "$FORGEJO_BODY")
+    
+    echo "FORGEJO_TITLE=$ESCAPED_TITLE" >> $GITHUB_ENV
+    echo "FORGEJO_BODY=$ESCAPED_BODY" >> $GITHUB_ENV
     ;;
   tag)
     FORGEJO_REF=$(echo "$PAYLOAD_JSON" | jq -r '.tag')
