@@ -20,8 +20,8 @@ case "$1" in
     FORGEJO_TITLE=$(FIELD=title DEFAULT_MSG="No title provided" FORGEJO_NUMBER=$FORGEJO_NUMBER python3 .ci/changelog/pr_field.py)
     FORGEJO_BODY=$(FIELD=body DEFAULT_MSG="No changelog provided" FORGEJO_NUMBER=$FORGEJO_NUMBER python3 .ci/changelog/pr_field.py)
     
-    echo FORGEJO_TITLE="$FORGEJO_TITLE" >> $GITHUB_ENV
-    echo FORGEJO_BODY="$FORGEJO_BODY" >> $GITHUB_ENV
+    echo FORGEJO_TITLE=\""$FORGEJO_TITLE"\" >> $GITHUB_ENV
+    echo FORGEJO_BODY=\""$FORGEJO_BODY"\" >> $GITHUB_ENV
     ;;
   tag)
     FORGEJO_REF=$(echo "$PAYLOAD_JSON" | jq -r '.tag')
