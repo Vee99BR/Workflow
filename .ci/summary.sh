@@ -10,5 +10,5 @@ if [ "$1" = "pull_request" ]; then
 echo "- PR #[${FORGEJO_NUMBER}]($FORGEJO_PR_URL)" >> $GITHUB_STEP_SUMMARY
 echo -n "- Title: " >> $GITHUB_STEP_SUMMARY
 eval echo $FORGEJO_TITLE >> $GITHUB_STEP_SUMMARY
-eval echo $FORGEJO_BODY >> $GITHUB_STEP_SUMMARY
+eval 'echo $FORGEJO_BODY' >> $GITHUB_STEP_SUMMARY
 fi
