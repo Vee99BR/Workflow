@@ -22,5 +22,5 @@ def get_pr_field():
     except:
         return DEFAULT_MSG
 
-field = get_pr_field()
+field = get_pr_field().replace("\r\n", "\\r\\n").replace("`", "\`")
 print(field if field != "" else DEFAULT_MSG)
