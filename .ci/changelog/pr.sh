@@ -38,7 +38,7 @@ src() {
 changelog() {
   echo "## Changelog"
   echo
-  echo $FORGEJO_BODY
+  eval echo $FORGEJO_BODY
   echo
 }
 
