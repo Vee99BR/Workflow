@@ -48,6 +48,7 @@ jobs:
       
       - name: Create job summary
         run: |
+          export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
           ./.ci/summary.sh ${{ inputs.build-id }}
 
       - name: Clone
@@ -86,9 +87,9 @@ jobs:
     steps:
       - id: set
         run: |
-          BASE='[{"runs-on": "ubuntu-latest", "arch": "amd64"},{"runs-on": "ubuntu-24.04-arm", "arch": "aarch64"},{"runs-on": "ubuntu-latest", "arch": "steamdeck"}'
+          BASE='[{"runs-on": "ubuntu-latest", "arch": "amd64"},{"runs-on": "ubuntu-latest", "arch": "steamdeck"}'
           
-          EXTRA=',{"runs-on": "ubuntu-latest", "arch": "legacy"},{"runs-on": "ubuntu-latest", "arch": "rog-ally"},{"runs-on": "ubuntu-24.04-arm", "arch": "armv9"}'
+          EXTRA=',{"runs-on": "ubuntu-latest", "arch": "legacy"},{"runs-on": "ubuntu-latest", "arch": "rog-ally"},{"runs-on": "ubuntu-24.04-arm", "arch": "aarch64"},{"runs-on": "ubuntu-24.04-arm", "arch": "armv9"}'
 
           if [ "${{ inputs.build-id }}" = "tag" ]; then
             MATRIX="${BASE}${EXTRA}]"
