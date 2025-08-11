@@ -61,6 +61,14 @@ jobs:
 
           ./.ci/changelog/pr.sh > changelog.md
 
+      - name: Delete Previous Release
+        run: |
+          gh release delete "$FORGEJO_NUMBER" --repo "$REPO" --cleanup-tag  -y
+          sleep 5
+        env:
+          GH_TOKEN: "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+        continue-on-error: true
+
       - name: Release (sha)
         uses: softprops/action-gh-release@v2.2.2
         with:
