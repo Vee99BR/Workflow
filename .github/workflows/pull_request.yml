@@ -51,10 +51,6 @@ jobs:
           sudo apt install -y python3-requests
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
 
-          UNESCAPED_TITLE=$(echo "$FORGEJO_TITLE")
-          echo "FORGEJO_TITLE=$UNESCAPED_TITLE" >> $GITHUB_ENV
-          export FORGEJO_TITLE=$UNESCAPED_TITLE
-
           ./.ci/changelog/pr.sh > changelog.md
 
       - name: Delete Previous Release
@@ -84,7 +80,7 @@ jobs:
       - name: Release (PR)
         uses: softprops/action-gh-release@v2.2.2
         with:
-          name: "${{ env.FORGEJO_TITLE }}"
+          name: ${{ env.FORGEJO_TITLE }}
           tag_name: ${{ env.FORGEJO_NUMBER }}
           repository: ${{ env.REPO }}
           body_path: ./changelog.md
