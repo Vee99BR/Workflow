@@ -56,8 +56,7 @@ cmake .. -G Ninja \
     -DYUZU_USE_QT_MULTIMEDIA=$MULTIMEDIA \
     -DYUZU_USE_QT_WEB_ENGINE=$WEBENGINE \
     -DYUZU_ENABLE_LTO=ON \
-    -DOPENSSL_ROOT_DIR="C:/Program Files/OpenSSL-Win64" \
-	  "${EXTRA_CMAKE_FLAGS[@]}"
+    "${EXTRA_CMAKE_FLAGS[@]}"
 
 ninja
 
