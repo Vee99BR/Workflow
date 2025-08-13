@@ -238,11 +238,10 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
 
-      - name: Install Vulkan SDK and OpenSSL
+      - name: Install Vulkan SDK
         shell: powershell
         run: |
           ./.ci/windows/install-vulkan-sdk.ps1
-          ./.ci/windows/install-openssl.ps1
 
       - name: Build
         shell: bash
