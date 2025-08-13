@@ -250,7 +250,7 @@ jobs:
           export PATH="${PATH}:${{ runner.workspace }}/Qt/${{ matrix.qt_version }}/${{ matrix.qt_arch }}/bin"
           export WINDEPLOYQT=windeployqt
 
-          ./.ci/windows/build.sh
+          ./.ci/windows/build.sh -DOPENSSL_ROOT_DIR=${{ env.OPENSSL_ROOT_DIR }}
 
       - name: Package
         shell: bash
