@@ -27,5 +27,5 @@ if ($ExitCode -ne 0) {
 echo "Finished installing OpenSSL $OpenSSLVer"
 
 if ("$env:GITHUB_ACTIONS" -eq "true") {
-    echo "OPENSSL_ROOT_DIR=C:/Program Files/OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    echo "OPENSSL_ROOT_DIR=C:/Program\ Files/OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 }
