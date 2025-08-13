@@ -58,7 +58,6 @@ jobs:
       - name: Configure
         run: |
           ./.ci/source/configure.sh
-          rm -rf eden/build
           STEAMDECK=true ./.ci/source/configure.sh
           rm -rf eden/build
 

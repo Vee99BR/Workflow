@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export ARCHIVE="git-archive-all-1.23.1"
-wget https://github.com/Kentzo/git-archive-all/releases/download/1.23.1/$ARCHIVE.tar.gz
+wget https://github.com/Kentzo/git-archive-all/releases/download/1.23.1/$ARCHIVE.tar.gz -nv
 tar xf $ARCHIVE.tar.gz
 
 cd eden
@@ -12,6 +12,3 @@ python ../$ARCHIVE/git_archive_all.py --include .cache --include GIT-COMMIT --in
 cd ..
 zstd -10 source.tar
 rm source.tar
-tar xf source.tar.zst
-zip -r source.zip source
-rm -rf source

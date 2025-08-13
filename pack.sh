@@ -23,8 +23,5 @@ do
 done
 
 if [ -d "source" ]; then
-  for ext in zip tar.zst
-  do
-    cp source/source.$ext artifacts/Eden-Source-${ID}.$ext
-  done
+  cp source/source.tar.zst artifacts/Eden-Source-${ID}.tar.zst
 fi
