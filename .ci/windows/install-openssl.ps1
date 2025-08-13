@@ -13,8 +13,7 @@ $WebClient = New-Object System.Net.WebClient
 $WebClient.DownloadFile($Uri, $Destination)
 echo "Finished downloading $ExeFile"
 
-$OPENSSL = "C:/OpenSSL/$OpenSSLVer"
-$Arguments = "--root `"$OPENSSL`" --accept-licenses --default-answer --confirm-command install"
+$Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-"
 
 echo "Installing OpenSSL $OpenSSLVer"
 $InstallProcess = Start-Process -FilePath $Destination -NoNewWindow -PassThru -Wait -ArgumentList $Arguments
@@ -26,7 +25,3 @@ if ($ExitCode -ne 0) {
 }
 
 echo "Finished installing OpenSSL $OpenSSLVer"
-
-if ("$env:GITHUB_ACTIONS" -eq "true") {
-    echo "OPENSSL=$OPENSSL" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-}
