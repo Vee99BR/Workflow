@@ -4,7 +4,8 @@
 $ErrorActionPreference = "Stop"
 
 $OpenSSLVer = "3_5_2"
-$Uri = "https://slproweb.com/download/Win64OpenSSL-$OpenSSLVer.exe"
+$ExeFile = "Win64OpenSSL-$OpenSSLVer.exe"
+$Uri = "https://slproweb.com/download/$ExeFile"
 $Destination = "./$ExeFile"
 
 echo "Downloading OpenSSL $OpenSSLVer from $Uri"
