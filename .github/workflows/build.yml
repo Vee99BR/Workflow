@@ -142,6 +142,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/eden/.cache
+            ${{ github.workspace }}/eden/build/_deps/*-build
           key: ${{ runner.os }}-${{ matrix.arch }}-cpm-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.arch }}-cpm-
@@ -213,22 +214,12 @@ jobs:
         shell: bash
         run: ./.ci/clone.sh true
 
-      - name: Set up vcpkg cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/eden/build/vcpkg_installed
-            ${{ github.workspace }}/eden/build/externals
-            ${{ github.workspace }}/eden/.vcpkg
-          key: ${{ runner.os }}-${{ matrix.arch }}-vcpkg-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-vcpkg-
-
       - name: Set up CPM cache
         uses: actions/cache@v4
         with:
           path: |
             ${{ github.workspace }}/eden/.cache
+            ${{ github.workspace }}/eden/build/_deps/*-build
           key: ${{ runner.os }}-${{ matrix.arch }}-cpm-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.arch }}-cpm-
@@ -291,6 +282,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/eden/.cache
+            ${{ github.workspace }}/eden/build/_deps/*-build
           key: ${{ runner.os }}-cpm-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-cpm-
