@@ -22,13 +22,9 @@ echo "Installing build dependencies..."
 echo "---------------------------------------------------------------"
 pacman -Syu --noconfirm \
 		base-devel \
-		boost \
-		boost-libs \
 		catch2 \
 		cmake \
 		curl \
-		enet \
-		fmt \
 		gamemode \
 		git \
 		glslang \
@@ -39,7 +35,6 @@ pacman -Syu --noconfirm \
 		libvpx \
 		nasm \
 		ninja \
-		nlohmann-json \
 		patchelf \
 		pulseaudio \
 		pulseaudio-alsa \
