@@ -7,7 +7,7 @@ GITREV=$(git show -s --format='%h')
 
 ZIP_NAME="Eden-Windows-${ARCH}-${GITDATE}-${GITREV}.zip"
 
-ARTIFACTS_DIR="artifacts"
+ARTIFACTS_DIR="../artifacts"
 PKG_DIR="build/pkg"
 
 mkdir -p "$ARTIFACTS_DIR"
