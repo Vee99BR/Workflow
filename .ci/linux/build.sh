@@ -10,7 +10,7 @@ amd64 | "")
     echo "Making amd64-v3 optimized build of Eden"
     ARCH="amd64_v3"
     ARCH_FLAGS="-march=x86-64-v3"
-    export EXTRA_CMAKE_FLAGS=(-DYUZU_BUILD_PRESET=v3 -DYUZU_USE_BUNDLED_SDL2=ON -DYUZU_USE_EXTERNAL_SDL2=OFF)
+    export EXTRA_CMAKE_FLAGS=(-DYUZU_BUILD_PRESET=v3 --DYUZU_USE_EXTERNAL_SDL2=ON)
     ;;
 steamdeck | zen2)
     echo "Making Steam Deck (Zen 2) optimized build of Eden"
@@ -28,7 +28,7 @@ legacy)
     echo "Making amd64 generic build of Eden"
     ARCH=amd64
     ARCH_FLAGS="-march=x86-64 -mtune=generic"
-    export EXTRA_CMAKE_FLAGS=(-DYUZU_BUILD_PRESET=generic -DYUZU_USE_BUNDLED_SDL2=ON -DYUZU_USE_EXTERNAL_SDL2=OFF)
+    export EXTRA_CMAKE_FLAGS=(-DYUZU_BUILD_PRESET=generic -DYUZU_USE_BUNDLED_SDL2=OFF -DYUZU_USE_EXTERNAL_SDL2=ON)
     ;;
 aarch64)
     echo "Making armv8-a build of Eden"
