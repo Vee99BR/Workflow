@@ -34,13 +34,13 @@ aarch64)
     echo "Making armv8-a build of Eden"
     ARCH=aarch64
     ARCH_FLAGS="-march=armv8-a -mtune=generic -w"
-    export EXTRA_CMAKE_FLAGS=(-DYUZU_BUILD_PRESET=generic -DYUZU_USE_EXTERNAL_SDL2=ON -DYUZU_USE_BUNDLED_OPENSSL=OFF)
+    export EXTRA_CMAKE_FLAGS=(-DYUZU_BUILD_PRESET=generic -DYUZU_USE_EXTERNAL_SDL2=ON)
     ;;
 armv9)
     echo "Making armv9-a build of Eden"
     ARCH=armv9
     ARCH_FLAGS="-march=armv9-a -mtune=generic -w"
-    export EXTRA_CMAKE_FLAGS=(-DYUZU_BUILD_PRESET=armv9 -DYUZU_USE_EXTERNAL_SDL2=ON -DYUZU_USE_BUNDLED_OPENSSL=OFF)
+    export EXTRA_CMAKE_FLAGS=(-DYUZU_BUILD_PRESET=armv9 -DYUZU_USE_EXTERNAL_SDL2=ON)
     ;;
 native)
     echo "Making native build of Eden"
