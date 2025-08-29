@@ -45,7 +45,7 @@ export EXTRA_CMAKE_FLAGS=("${EXTRA_CMAKE_FLAGS[@]}" $@)
 mkdir -p build && cd build
 cmake .. -G Ninja \
     -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
-    -DCMAKE_CXX_FLAGS="\"/LTCG\"" \
+    -DYUZU_ENABLE_LTO=ON
 	-DENABLE_QT_TRANSLATION=ON \
     -DUSE_DISCORD_PRESENCE=ON \
     -DYUZU_USE_BUNDLED_SDL2=ON \
