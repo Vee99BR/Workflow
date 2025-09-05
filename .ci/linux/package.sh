@@ -16,7 +16,7 @@ URUNTIME="https://github.com/VHSgunzo/uruntime/releases/latest/download/uruntime
 case "$1" in
     amd64|"")
         echo "Packaging amd64-v3 optimized build of Eden"
-        ARCH="amd64_v3"
+        ARCH="amd64"
         ;;
     steamdeck)
         echo "Packaging Steam Deck (Zen 2) optimized build of Eden"
@@ -28,7 +28,7 @@ case "$1" in
         ;;
     legacy)
         echo "Packaging amd64 generic build of Eden"
-        ARCH=amd64
+        ARCH=legacy
         ;;
     aarch64)
         echo "Packaging armv8-a build of Eden"
