@@ -109,6 +109,7 @@ cmake .. -G Ninja \
     -DSPIRV-Tools_FORCE_SYSTEM=ON \
     -DYUZU_USE_FASTER_LD=ON \
     -DYUZU_ENABLE_LTO=ON \
+    -DDYNARMIC_ENABLE_LTO=ON \
     "${EXTRA_CMAKE_FLAGS[@]}"
 
 ninja -j${NPROC}
