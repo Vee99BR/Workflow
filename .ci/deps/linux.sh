@@ -42,8 +42,9 @@ pacman -Syu --noconfirm \
 		inetutils \
 		jq \
 		libva \
+		libvdpau \
 		libvpx \
-		mbedtls \
+		mbedtls2 \
 		nasm \
 		ninja \
 		nlohmann-json \
