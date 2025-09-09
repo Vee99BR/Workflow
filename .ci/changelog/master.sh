@@ -1,7 +1,7 @@
 #!/bin/sh -ex
 
 BASE_DOWNLOAD_URL="https://github.com/Eden-CI/Master/releases/download"
-TAG=${FORGEJO_REF}
+TAG=${ID}
 
 linux() {
   ARCH="$1"
@@ -9,7 +9,7 @@ linux() {
   DESCRIPTION="$3"
 
   echo -n "| "
-  echo -n "[$PRETTY_ARCH](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${FORGEJO_REF}-${ARCH}.AppImage) | "
+  echo -n "[$PRETTY_ARCH](${BASE_DOWNLOAD_URL}/${FORGEJO_REF}/Eden-Linux-${TAG}-${ARCH}.AppImage) | "
   echo -n "$DESCRIPTION |"
   echo
 }
@@ -20,7 +20,7 @@ win() {
   DESCRIPTION="$3"
 
   echo -n "| "
-  echo -n "[$PRETTY_ARCH](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Windows-${FORGEJO_REF}-${ARCH}.zip) | "
+  echo -n "[$PRETTY_ARCH](${BASE_DOWNLOAD_URL}/${FORGEJO_REF}/Eden-Windows-${TAG}-${ARCH}.zip) | "
   echo -n "$DESCRIPTION |"
   echo
 }
@@ -30,7 +30,7 @@ src() {
   DESCRIPTION="$2"
 
   echo -n "| "
-  echo -n "[$EXT](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Source-${TAG}.${EXT}) | "
+  echo -n "[$EXT](${BASE_DOWNLOAD_URL}/${FORGEJO_REF}/Eden-Source-${TAG}.${EXT}) | "
   echo -n "$DESCRIPTION |"
   echo
 }
@@ -78,15 +78,22 @@ echo "Windows packages are in-place zip files."
 echo
 echo "| Build | Description |"
 echo "| ----- | ----------- |"
-win amd64 amd64 "For any Windows machine running an AMD or Intel CPU"
-echo "| arm64 (WIP) | For any Windows machine running a Qualcomm or other ARM-based SoC. Currently a work-in-progress."
-# win arm64 aarch64 "For any Windows machine running a Qualcomm or other ARM-based SoC"
+win amd64-msvc amd64 "For any Windows machine running an AMD or Intel CPU"
+win arm64-msvc aarch64 "For any Windows machine running a Qualcomm or other ARM-based SoC"
+echo
+echo "We are additionally providing experimental packages built with clang, rather than MSVC. These builds should be identical, if not faster,"
+echo "but how it affects the overall experience is currently unknown."
+echo
+echo "| Build | Description |"
+echo "| ----- | ----------- |"
+win amd64-clang "amd64 (clang)" "For any Windows machine running an AMD or Intel CPU (clang-cl build)"
+win arm64-clang "aarch64 (clang)" "For any Windows machine running a Qualcomm or other ARM-based SoC (clang-cl build)"
 echo
 echo "### Android"
 echo
 echo "Android comes in a single APK."
 echo
-echo "[Android APK](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Android-${FORGEJO_REF}.apk)"
+echo "[Android APK](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Android-${TAG}.apk)"
 echo
 echo "### Source"
 echo
@@ -94,6 +101,5 @@ echo "Contains all source code, submodules, and CPM cache at the time of release
 echo
 echo "| File | Description |"
 echo "| ---- | ----------- |"
-src "zip" "Source as a zip archive (all platforms)"
 src "tar.zst" "Source as a zstd-compressed tarball (Windows requires 7zip)"
 echo

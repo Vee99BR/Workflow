@@ -40,7 +40,7 @@ jobs:
           export PAYLOAD_JSON='${{ toJSON(github.event.client_payload) }}'
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
           ./.ci/parse.sh ${{ inputs.build-id }}
-      
+
       - name: Create job summary
         run: |
           export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
@@ -70,9 +70,9 @@ jobs:
     steps:
       - id: set
         run: |
-          BASE='[{"runs-on": "ubuntu-latest", "arch": "amd64"},{"runs-on": "ubuntu-latest", "arch": "steamdeck"}' # ',{"runs-on": "ubuntu-24.04-arm", "arch": "aarch64"}'
-          
-          EXTRA=',{"runs-on": "ubuntu-latest", "arch": "legacy"},{"runs-on": "ubuntu-latest", "arch": "rog-ally"}' # ',{"runs-on": "ubuntu-24.04-arm", "arch": "armv9"}'
+          BASE='[{"runs-on": "ubuntu-latest", "arch": "amd64"},{"runs-on": "ubuntu-latest", "arch": "steamdeck"},{"runs-on": "ubuntu-24.04-arm", "arch": "aarch64"}'
+
+          EXTRA=',{"runs-on": "ubuntu-latest", "arch": "legacy"},{"runs-on": "ubuntu-latest", "arch": "rog-ally"},{"runs-on": "ubuntu-24.04-arm", "arch": "armv9"}'
 
           if [ "${{ inputs.build-id }}" = "tag" ]; then
             MATRIX="${BASE}${EXTRA}]"
@@ -148,34 +148,30 @@ jobs:
           path: artifacts/*
 
   windows:
-    name: "Windows (${{ matrix.arch }})"
-    runs-on: ${{ matrix.runs-on }}
+    name: "Windows ${{ matrix.os.arch }} (${{ matrix.compiler }})"
+    env:
+      QT_VERSION: 6.9.1
 
     strategy:
       fail-fast: false
       matrix:
-        include:
+        os:
           - runs-on: windows-latest
             arch: amd64
-            qt_arch: win64_msvc2022_64
-            qt_version: 6.9.1
-            qt_modules: qtmultimedia qt5compat
+          - runs-on: windows-11-arm
+            arch: arm64
+        compiler: [clang, msvc]
 
-          # - runs-on: windows-11-arm
-          #   arch: arm64
+    runs-on: ${{ matrix.os.runs-on }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@v4.3.0
         with:
-          version: ${{ matrix.qt_version }}
-          host: 'windows'
-          target: 'desktop'
-          arch: ${{ matrix.qt_arch }}
-          modules: ${{ matrix.qt_modules }}
+          version: ${{ env.QT_VERSION }}
           cache: 'true'
 
       - name: Set build variables
@@ -185,6 +181,7 @@ jobs:
           echo "DEVEL=${{ inputs.devel }}" >> $GITHUB_ENV
           echo "USE_WEBENGINE=${{ inputs.webengine }}" >> $GITHUB_ENV
           echo "USE_MULTIMEDIA=${{ inputs.multimedia }}" >> $GITHUB_ENV
+          echo "COMPILER=${{ matrix.compiler }}" >> $GITHUB_ENV
 
       - name: Parse Forgejo payload
         shell: bash
@@ -204,14 +201,14 @@ jobs:
           path: |
             ${{ github.workspace }}/eden/.cache
             ${{ github.workspace }}/eden/build/_deps/*-build
-          key: ${{ runner.os }}-${{ matrix.arch }}-cpm-${{ github.run_id }}
+          key: ${{ runner.os }}-${{ matrix.os.arch }}-unix-cpm-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-cpm-
+            ${{ runner.os }}-${{ matrix.os.arch }}-cpm-unix-
 
       - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: ${{ matrix.arch }}
+          arch: ${{ matrix.os.arch }}
 
       - name: Install Vulkan SDK
         shell: powershell
@@ -221,21 +218,22 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          export PATH="${PATH}:${{ runner.workspace }}/Qt/${{ matrix.qt_version }}/${{ matrix.qt_arch }}/bin"
           export WINDEPLOYQT=windeployqt
+          git config --global core.autocrlf off
+          dos2unix eden/.patch/boost/*
 
           ./.ci/windows/build.sh
 
       - name: Package
         shell: bash
         run: |
-          export ARCH=${{ matrix.arch }}
+          export ARCH=${{ matrix.os.arch }}-${{ matrix.compiler }}
           ./.ci/windows/package.sh
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: windows-${{ matrix.arch }}
+          name: windows-${{ matrix.os.arch }}-${{ matrix.compiler }}
           path: artifacts/*
 
   android:

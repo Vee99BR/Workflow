@@ -2,9 +2,9 @@
 
 mkdir -p artifacts
 
-ARCHES="amd64 steamdeck"
+ARCHES="amd64 steamdeck aarch64"
 if [ "$DEVEL" = "false" ]; then
-  ARCHES="$ARCHES legacy rog-ally"
+  ARCHES="$ARCHES legacy rog-ally armv9"
   # "aarch64 armv9"
 fi
 
@@ -18,9 +18,11 @@ done
 
 cp android/*.apk artifacts/Eden-Android-${ID}.apk
 
-for arch in amd64 # arm64
+for arch in amd64 arm64
 do
-  cp windows-$arch/*.zip artifacts/Eden-Windows-${ID}-${arch}.zip
+  for compiler in clang msvc; do
+    cp windows-$arch-${compiler}/*.zip artifacts/Eden-Windows-${ID}-${arch}-${compiler}.zip
+  done
 done
 
 if [ -d "source" ]; then
