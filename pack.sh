@@ -3,9 +3,12 @@
 mkdir -p artifacts
 
 ARCHES="amd64 steamdeck aarch64"
+
+[ "$DISABLE_ARM" != "true" ] && ARCHES="$ARCHES aarch64"
 COMPILERS="gcc"
 if [ "$DEVEL" = "false" ]; then
-  ARCHES="$ARCHES legacy rog-ally armv9"
+  ARCHES="$ARCHES legacy rog-ally"
+  [ "$DISABLE_ARM" != "true" ] && ARCHES="$ARCHES armv9"
   COMPILERS="$COMPILERS clang"
 fi
 

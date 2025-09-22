@@ -25,6 +25,9 @@ on:
         default: 'master'
   workflow_dispatch:
 
+env:
+  DISABLE_ARM: true
+
 jobs:
   summary:
     name: "Summary"
@@ -116,7 +119,12 @@ jobs:
     steps:
       - id: set
         run: |
-          BASE='[{"runs-on": "ubuntu-latest", "arch": "amd64"},{"runs-on": "ubuntu-latest", "arch": "steamdeck"},{"runs-on": "ubuntu-24.04-arm", "arch": "aarch64"}'
+          BASE='[{"runs-on": "ubuntu-latest", "arch": "amd64"},{"runs-on": "ubuntu-latest", "arch": "steamdeck"}'
+          ARM=',{"runs-on": "ubuntu-24.04-arm", "arch": "aarch64"}'
+
+          if [ "${{ env.DISABLE_ARM }}" != true ]; then
+            BASE="${BASE}${ARM}"
+          fi
 
           EXTRA=',{"runs-on": "ubuntu-latest", "arch": "legacy"},{"runs-on": "ubuntu-latest", "arch": "rog-ally"},{"runs-on": "ubuntu-24.04-arm", "arch": "armv9"}'
 
