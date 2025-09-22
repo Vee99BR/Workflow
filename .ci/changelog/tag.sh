@@ -3,7 +3,9 @@
 TAG=${FORGEJO_REF}
 REF=${FORGEJO_REF}
 
-brief() {}
+brief() {
+  echo
+}
 
 changelog() {
   echo "## Changelog"
