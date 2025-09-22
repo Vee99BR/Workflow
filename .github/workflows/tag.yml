@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [tag]
 
+env:
+  DISABLE_ARM: ${{ vars.DISABLE_ARM }}
+
 jobs:
   build:
     name: Build

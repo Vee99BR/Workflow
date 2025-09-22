@@ -8,6 +8,9 @@ on:
     branches:
       - '*'
 
+env:
+  DISABLE_ARM: ${{ vars.DISABLE_ARM }}
+
 jobs:
   build:
     name: Build
