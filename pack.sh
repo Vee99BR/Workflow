@@ -2,7 +2,7 @@
 
 mkdir -p artifacts
 
-ARCHES="amd64 steamdeck aarch64"
+ARCHES="amd64 steamdeck"
 
 [ "$DISABLE_ARM" != "true" ] && ARCHES="$ARCHES aarch64"
 COMPILERS="gcc"
