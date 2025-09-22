@@ -126,7 +126,12 @@ jobs:
             BASE="${BASE}${ARM}"
           fi
 
-          EXTRA=',{"runs-on": "ubuntu-latest", "arch": "legacy"},{"runs-on": "ubuntu-latest", "arch": "rog-ally"},{"runs-on": "ubuntu-24.04-arm", "arch": "armv9"}'
+          EXTRA=',{"runs-on": "ubuntu-latest", "arch": "legacy"},{"runs-on": "ubuntu-latest", "arch": "rog-ally"}'
+          ARM=',{"runs-on": "ubuntu-24.04-arm", "arch": "armv9"}'
+
+          if [ "${{ env.DISABLE_ARM }}" != true ]; then
+            EXTRA="${EXTRA}${ARM}"
+          fi
 
           if [ "${{ inputs.build-id }}" = "tag" ]; then
             MATRIX="${BASE}${EXTRA}]"
