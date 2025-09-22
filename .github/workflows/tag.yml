@@ -52,8 +52,20 @@ jobs:
           export ID=${FORGEJO_REF}
           ./pack.sh
 
-      - name: Generate changelog
-        run: ./.ci/changelog/generate.sh > changelog.md
+      - name: Generate changelog(s)
+        run: |
+          ./.ci/changelog/generate.sh > changelog.md
+          mkdir -p whatsnew
+          echo "See the changelog here: https://github.com/eden-emulator/Releases/releases/tag/${{ env.FORGEJO_REF }}" > whatsnew/whatsnew-en-US
+
+      - uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_CREDENTIALS }}
+          packageName: dev.eden.eden_emulator
+          releaseFiles: android-aab/*.aab
+          whatsNewDirectory: whatsnew
+          releaseName: ${{ env.FORGEJO_REF }}
+          changesNotSentForReview: true
 
       - name: Release
         uses: softprops/action-gh-release@v2.2.2
