@@ -48,6 +48,15 @@ jobs:
           echo "DEVEL=false" >> $GITHUB_ENV
           echo "BUILD=tag" >> $GITHUB_ENV
 
+          case "${{ env.FORGEJO_REF }}" in
+            (*rc*|*alpha*|*beta*)
+              echo "TRACK=beta" >> $GITHUB_ENV
+              ;;
+            (*)
+              echo "TRACK=production" >> $GITHUB_ENV
+              ;;
+          esac
+
       - name: Package artifacts nicely
         run: |
           export ID=${FORGEJO_REF}
@@ -63,7 +72,7 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_CREDENTIALS }}
           packageName: dev.eden.eden_emulator
-          track: beta
+          track: ${{ env.TRACK }}
           releaseFiles: android-aab/*.aab
           whatsNewDirectory: whatsnew
           releaseName: ${{ env.FORGEJO_REF }}
