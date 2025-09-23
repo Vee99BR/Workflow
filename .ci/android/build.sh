@@ -13,7 +13,8 @@ else
     exit 1
 fi
 
-keytool -list -v -storepass ${ANDROID_KEYSTORE_PASS} -keystore ${ANDROID_KEYSTORE_FILE} | grep SHA1
+SHA1SUM=$(keytool -list -v -storepass ${ANDROID_KEYSTORE_PASS} -keystore ${ANDROID_KEYSTORE_FILE} | grep SHA1 | cut -d " " -f3)
+echo "Keystore SHA1 is ${SHA1SUM}"
 
 cd src/android
 chmod +x ./gradlew

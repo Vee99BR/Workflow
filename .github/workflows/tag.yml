@@ -63,10 +63,10 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_CREDENTIALS }}
           packageName: dev.eden.eden_emulator
+          track: draft
           releaseFiles: android-aab/*.aab
           whatsNewDirectory: whatsnew
           releaseName: ${{ env.FORGEJO_REF }}
-          changesNotSentForReview: true
 
       - name: Release
         uses: softprops/action-gh-release@v2.2.2
