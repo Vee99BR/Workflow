@@ -63,7 +63,7 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_CREDENTIALS }}
           packageName: dev.eden.eden_emulator
-          track: draft
+          track: beta
           releaseFiles: android-aab/*.aab
           whatsNewDirectory: whatsnew
           releaseName: ${{ env.FORGEJO_REF }}
