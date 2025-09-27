@@ -7,7 +7,7 @@ case "$1" in
 amd64 | "")
     echo "Making amd64-v3 optimized build of Eden"
     ARCH="amd64_v3"
-    ARCH_FLAGS="-march=x86-64-v3"
+    ARCH_FLAGS="-march=x86-64-v3 -mtune=generic"
     export EXTRA_CMAKE_FLAGS=(-DYUZU_BUILD_PRESET=v3)
     ;;
 steamdeck | zen2)
@@ -54,27 +54,20 @@ native)
     ;;
 esac
 
-export ARCH_FLAGS="$ARCH_FLAGS -O3 -pipe -flto=auto"
+[ ! -z "$1" ] && shift
 
-if [ "$TARGET" = "appimage" ]; then
-    EXTRA_CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=/usr -DYUZU_ROOM=ON -DYUZU_ROOM_STANDALONE=OFF -DYUZU_CMD=OFF)
-else
-    EXTRA_CMAKE_FLAGS+=(-DYUZU_USE_PRECOMPILED_HEADERS=OFF)
-fi
+export ARCH_FLAGS="$ARCH_FLAGS -O3 -pipe -w"
 
-if [ "$COMPILER" = "clang" ]; then
-    EXTRA_CMAKE_FLAGS+=(-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++)
-    ARCH_FLAGS="$ARCH_FLAGS -fuse-ld=lld -w"
-else
-    ARCH_FLAGS="$ARCH_FLAGS -fuse-ld=mold -w"
-fi
+EXTRA_CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=/usr -DYUZU_ROOM=ON -DYUZU_ROOM_STANDALONE=OFF -DYUZU_CMD=OFF)
+
+[ "$COMPILER" = "clang" ] && EXTRA_CMAKE_FLAGS+=(-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++)
 
 [ "$DEVEL" != "true" ] && EXTRA_CMAKE_FLAGS+=(-DENABLE_QT_UPDATE_CHECKER=ON)
 
 if [ "$SDL2" = "external" ]; then
-    EXTRA_CMAKE_FLAGS+=(-DYUZU_USE_BUNDLED_SDL2=OFF -DYUZU_USE_EXTERNAL_SDL2=ON)
+    EXTRA_CMAKE_FLAGS+=(-DYUZU_USE_EXTERNAL_SDL2=ON)
 else
-    EXTRA_CMAKE_FLAGS+=(-DYUZU_USE_BUNDLED_SDL2=ON -DYUZU_USE_EXTERNAL_SDL2=OFF)
+    EXTRA_CMAKE_FLAGS+=(-DYUZU_USE_BUNDLED_SDL2=ON)
 fi
 
 EXTRA_CMAKE_FLAGS+=("$@")
@@ -96,6 +89,7 @@ cmake .. -G Ninja \
     -DYUZU_USE_QT_WEB_ENGINE=${WEBENGINE:-OFF} \
     -DYUZU_ENABLE_LTO=ON \
     -DDYNARMIC_ENABLE_LTO=ON \
+    -DYUZU_USE_FASTER_LD=ON \
     -DYUZU_USE_BUNDLED_OPENSSL=ON \
     -DYUZU_DISABLE_LLVM=ON \
     "${EXTRA_CMAKE_FLAGS[@]}"
