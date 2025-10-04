@@ -198,9 +198,9 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/build/_deps/*-build
-          key: ${{ runner.os }}-${{ matrix.os.arch }}-cpm-${{ github.run_id }}
+          key: ${{ runner.os }}-${{ matrix.os.arch }}-cpm-v3-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.os.arch }}-cpm-
+            ${{ runner.os }}-${{ matrix.os.arch }}-cpm-v3-
 
       - name: Build
         shell: bash
@@ -287,9 +287,9 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/build/_deps/*-build
-          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-unix-cpm-${{ github.run_id }}
+          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-unix-cpm-v3-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-unix-cpm-
+            ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-unix-cpm-v3-
 
       - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -360,9 +360,9 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/build/_deps/*-build
-          key: ${{ runner.os }}-cpm-${{ github.run_id }}
+          key: ${{ runner.os }}-cpm-v3-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-cpm-
+            ${{ runner.os }}-cpm-v3-
 
       - name: Build
         run: |
@@ -432,9 +432,9 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/build/_deps/*-build
-          key: ${{ runner.os }}-cpm-${{ github.run_id }}
+          key: ${{ runner.os }}-cpm-v3-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-cpm-
+            ${{ runner.os }}-cpm-v3-
 
       - name: Build
         run: |
