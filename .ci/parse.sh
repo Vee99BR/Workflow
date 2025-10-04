@@ -2,7 +2,7 @@
 
 echo $PAYLOAD_JSON
 
-DEFAULT=cmake/no-mold
+DEFAULT=update-fmt
 
 case "$1" in
   master)
@@ -41,7 +41,7 @@ esac
 if [ "$FORGEJO_REF" = "null" ] || [ "$FORGEJO_REF" = "" ]
 then
   FORGEJO_REF=origin/$DEFAULT
-  FORGEJO_BRANCH=cmake/$DEFAULT
+  FORGEJO_BRANCH=$DEFAULT
 fi
 
 echo "FORGEJO_REF=$FORGEJO_REF" >> $GITHUB_ENV
