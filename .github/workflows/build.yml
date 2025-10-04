@@ -203,6 +203,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache
+            ${{ github.workspace }}/build/_deps/*-build
           key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-
@@ -293,6 +294,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache
+            ${{ github.workspace }}/build/_deps/*-build
           key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-
@@ -398,6 +400,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache
+            ${{ github.workspace }}/build/_deps/*-build
           key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-
           restore-keys: |
             ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-
@@ -481,6 +484,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache
+            ${{ github.workspace }}/build/_deps/*-build
           key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-
