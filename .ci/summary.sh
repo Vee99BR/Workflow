@@ -8,7 +8,7 @@ EOF
 
 if [ "$1" = "pull_request" ]; then
 echo "- PR #[${FORGEJO_NUMBER}]($FORGEJO_PR_URL)" >> $GITHUB_STEP_SUMMARY
-echo "- Merge Base: [\`$FORGEJO_MERGE_BASE\`](https://git.eden-emu.dev/eden-emu/eden/commit/$FORGEJO_MERGE_BASE)"
+echo "- Merge Base: [\`$FORGEJO_MERGE_BASE\`](https://git.eden-emu.dev/eden-emu/eden/commit/$FORGEJO_MERGE_BASE)" >> $GITHUB_STEP_SUMMARY
 echo -n "- Title: " >> $GITHUB_STEP_SUMMARY
 echo $FORGEJO_TITLE >> $GITHUB_STEP_SUMMARY
 echo >> $GITHUB_STEP_SUMMARY
