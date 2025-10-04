@@ -75,6 +75,7 @@ jobs:
           cd eden
           # small patch while it isn't merged
           curl https://git.eden-emu.dev/eden-emu/eden/pulls/2673.patch | git apply
+          curl https://git.eden-emu.dev/eden-emu/eden/pulls/2675.patch | git apply
           rm -rf .git* .ci .github docs
 
       - name: Upload cloned repo
