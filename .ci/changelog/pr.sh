@@ -5,6 +5,8 @@ REF=${FORGEJO_NUMBER}-${FORGEJO_REF}
 
 brief() {
   echo "This is pull request number [$FORGEJO_NUMBER]($FORGEJO_PR_URL), ref [\`$FORGEJO_REF\`](https://git.eden-emu.dev/eden-emu/eden/commit/$FORGEJO_REF) of Eden."
+  echo
+  echo "This PR's merge base is [\`$FORGEJO_MERGE_BASE\`](https://git.eden-emu.dev/eden-emu/eden/commit/$FORGEJO_MERGE_BASE)."
 }
 
 changelog() {

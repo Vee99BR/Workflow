@@ -20,6 +20,7 @@ case "$1" in
     echo "FORGEJO_CLONE_URL=$(echo "$PAYLOAD_JSON" | jq -r '.clone_url')" >> $GITHUB_ENV
     echo "FORGEJO_NUMBER=$FORGEJO_NUMBER" >> $GITHUB_ENV
     echo "FORGEJO_PR_URL=$(echo "$PAYLOAD_JSON" | jq -r '.url')" >> $GITHUB_ENV
+    echo "FORGEJO_MERGE_BASE=$(echo "$PAYLOAD_JSON" | jq -r '.merge_base')" >> $GITHUB_ENV
 
     # thanks POSIX
     FORGEJO_TITLE=$(FIELD=title DEFAULT_MSG="No title provided" FORGEJO_NUMBER=$FORGEJO_NUMBER python3 .ci/changelog/pr_field.py)
