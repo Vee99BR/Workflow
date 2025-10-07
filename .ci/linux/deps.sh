@@ -46,7 +46,6 @@ pacman -Syu --noconfirm \
 		unzip \
 		ffnvcodec-headers \
 		vulkan-headers \
-		vulkan-mesa-device-select \
 		vulkan-mesa-layers \
 		vulkan-utility-libraries \
 		wget \
