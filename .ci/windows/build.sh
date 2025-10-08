@@ -17,8 +17,10 @@ fi
 
 echo $EXTRA_CMAKE_FLAGS
 
-mkdir -p build && cd build
-cmake .. -G Ninja \
+BUILDDIR=${BUILDDIR:-build}
+NUM_JOBS=$(nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
+
+cmake -S . -B "$BUILDDIR" -G Ninja \
     -DCMAKE_BUILD_TYPE="${BUILD_TYPE:-Release}" \
 	-DENABLE_QT_TRANSLATION=ON \
     -DUSE_DISCORD_PRESENCE=ON \
@@ -38,12 +40,12 @@ cmake .. -G Ninja \
     "${EXTRA_CMAKE_FLAGS[@]}" \
     "$@"
 
-ninja
+cmake --build "$BUILDDIR" --parallel $NUM_JOBS
 
 set +e
-rm -f bin/*.pdb
+rm -f "$BUILDDIR/bin/"*.pdb
 set -e
 
-$WINDEPLOYQT --release --no-compiler-runtime --no-opengl-sw --no-system-dxc-compiler --no-system-d3d-compiler --dir pkg bin/eden.exe
+$WINDEPLOYQT --release --no-compiler-runtime --no-opengl-sw --no-system-dxc-compiler --no-system-d3d-compiler --dir "$BUILDDIR/pkg" "$BUILDDIR/bin/eden.exe"
 
-cp bin/* pkg
+cp "$BUILDDIR/bin/"* "$BUILDDIR/pkg"
