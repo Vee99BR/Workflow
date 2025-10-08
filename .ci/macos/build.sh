@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 # SPDX-FileCopyrightText: 2025 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -10,14 +10,12 @@ if [ -z "$BUILD_TYPE" ]; then
 fi
 
 if [ "$DEVEL" != "true" ]; then
-    export EXTRA_CMAKE_FLAGS=("${EXTRA_CMAKE_FLAGS[@]}" -DENABLE_QT_UPDATE_CHECKER=ON)
+    export EXTRA_CMAKE_FLAGS+=(-DENABLE_QT_UPDATE_CHECKER=ON)
 fi
 
 if [ "$BUNDLE_QT" = "true" ]; then
-    export EXTRA_CMAKE_FLAGS=("${EXTRA_CMAKE_FLAGS[@]}" -DYUZU_USE_BUNDLED_QT=ON)
+    export EXTRA_CMAKE_FLAGS+=(-DYUZU_USE_BUNDLED_QT=ON)
 fi
-
-echo $EXTRA_CMAKE_FLAGS
 
 BUILDDIR=${BUILDDIR:-build}
 NUM_JOBS=$(nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
@@ -37,8 +35,9 @@ cmake -S . -B "$BUILDDIR" -G Ninja \
     -DYUZU_TESTS=OFF \
     -DDYNARMIC_TESTS=OFF \
     -DBUILD_TESTING=OFF \
-    -DUSE_CCACHE=${CCACHE:-false} \
+	-DYUZU_USE_BUNDLED_MOLTENVK=ON \
+    -DUSE_CCACHE="${CCACHE:-false}" \
     "${EXTRA_CMAKE_FLAGS[@]}" \
     "$@"
 
-cmake --build "$BUILDDIR" --parallel $NUM_JOBS
+cmake --build "$BUILDDIR" --parallel "$NUM_JOBS"
