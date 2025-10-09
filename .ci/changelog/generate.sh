@@ -1,6 +1,8 @@
-#!/bin/sh -ex
+#!/bin/bash -ex
 
-. .ci/changelog/$BUILD.sh
+# shellcheck disable=SC1090
+. ".ci/changelog/$BUILD.sh"
+
 BASE_DOWNLOAD_URL="https://github.com/$REPO/releases/download"
 
 linux() {
@@ -144,8 +146,9 @@ echo "### macOS"
 echo
 echo "macOS comes in a tarballed app. These builds are currently experimental, and you should expect major graphical glitches and crashes."
 echo "In order to run the app, you *may* need to go to System Settings -> Privacy & Security -> Security -> Allow untrusted app."
-echo
-echo "[macOS](${BASE_DOWNLOAD_URL}/${TAG}/Eden-macOS-${REF}.tar.gz)"
+echo "| File | Description |"
+echo "| ---- | ----------- |"
+echo "| [macOS](${BASE_DOWNLOAD_URL}/${TAG}/Eden-macOS-${REF}.tar.gz) | For Apple Silicon (M1, M2, etc) computers running macOS"
 echo
 echo "### Source"
 echo
