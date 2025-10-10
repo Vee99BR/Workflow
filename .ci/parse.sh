@@ -11,7 +11,7 @@ case "$1" in
     FORGEJO_BRANCH=master
 
     echo "FORGEJO_CLONE_URL=https://git.eden-emu.dev/eden-emu/eden.git" >> $GITHUB_ENV
-    echo "FORGEJO_CLONE_URL=$FORGEJO_BEFORE" >> $GITHUB_ENV
+    echo "FORGEJO_BEFORE=$FORGEJO_BEFORE" >> $GITHUB_ENV
     ;;
   pull_request)
     FORGEJO_REF=$(echo "$PAYLOAD_JSON" | jq -r '.ref')
