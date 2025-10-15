@@ -628,9 +628,3 @@ jobs:
         with:
           name: ${{ matrix.os.platform }}-binary-${{ matrix.os.arch }}-${{ matrix.compiler }}
           path: install/Eden-${{ matrix.os.name }}.tar.zst
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: ${{ matrix.os.platform }}-${{ matrix.os.arch }}-${{ matrix.compiler }}
-          path: artifacts/*
