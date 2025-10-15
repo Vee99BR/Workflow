@@ -48,6 +48,7 @@ jobs:
         shell: bash
         run: |
           echo "${{ toJSON(github.event.client_payload) }}" > ./payload.json
+          cat payload.json
           ./.ci/forgejo-ci.sh --parse ${{ inputs.build-id }}
 
       - name: Upload payload environment
