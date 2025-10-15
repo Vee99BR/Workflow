@@ -41,4 +41,5 @@ fi
 
 cp -r macos/*.tar.gz "artifacts/Eden-macOS-${ID}.tar.gz"
 
-cp -r freebsd-amd64-clang/*.tar.zst "artifacts/Eden-FreeBSD-${ID}-amd64-clang.tar.zst"
+# TODO
+cp -r freebsd-binary-amd64-clang/*.tar.zst "artifacts/Eden-FreeBSD-${ID}-amd64-clang.tar.zst"
