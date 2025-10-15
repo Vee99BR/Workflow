@@ -38,15 +38,13 @@ jobs:
       - name: Parse Forgejo payload
         shell: bash
         run: |
-          export PAYLOAD_JSON='${{ toJSON(github.event.client_payload) }}'
-          export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
-          ./.ci/parse.sh tag
+          echo "${{ toJSON(github.event.client_payload) }}" > ./payload.json
+          ./.ci/forgejo-ci.sh --parse tag
 
       - name: Set environment variables
         run: |
           echo "REPO=eden-emulator/Releases" >> $GITHUB_ENV
           echo "DEVEL=false" >> $GITHUB_ENV
-          echo "BUILD=tag" >> $GITHUB_ENV
 
           case "${{ env.FORGEJO_REF }}" in
             (*rc*|*alpha*|*beta*)
@@ -64,7 +62,7 @@ jobs:
 
       - name: Generate changelog(s)
         run: |
-          ./.ci/changelog/generate.sh > changelog.md
+          ./.ci/changelog/generate.sh tag > changelog.md
           mkdir -p whatsnew
           echo "See the changelog here: https://github.com/eden-emulator/Releases/releases/tag/${{ env.FORGEJO_REF }}" > whatsnew/whatsnew-en-US
 

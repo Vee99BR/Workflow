@@ -2,3 +2,5 @@ changelog.md
 /eden
 git-archive-all*
 source.*
+payload.json
+forgejo.env

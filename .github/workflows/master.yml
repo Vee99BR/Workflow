@@ -11,6 +11,8 @@ jobs:
   build:
     name: Build
     uses: ./.github/workflows/build.yml
+    with:
+      build-id: 'master'
     secrets: inherit
 
   release:
@@ -34,16 +36,14 @@ jobs:
       - name: Parse Forgejo payload
         shell: bash
         run: |
-          export PAYLOAD_JSON='${{ toJSON(github.event.client_payload) }}'
-          export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
-          ./.ci/parse.sh master
+          echo "${{ toJSON(github.event.client_payload) }}" > ./payload.json
+          ./.ci/forgejo-ci.sh --parse master
 
       - name: Set environment variables
         run: |
           echo "REPO=Eden-CI/Master" >> $GITHUB_ENV
           echo "DEVEL=true" >> $GITHUB_ENV
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
-          echo "BUILD=master" >> $GITHUB_ENV
 
       - name: Package artifacts nicely
         run: |
@@ -59,7 +59,7 @@ jobs:
         continue-on-error: true
 
       - name: Generate changelog
-        run: ./.ci/changelog/generate.sh > changelog.md
+        run: ./.ci/changelog/generate.sh master > changelog.md
 
       - name: Release
         uses: softprops/action-gh-release@v2.2.2

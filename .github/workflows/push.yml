@@ -1,12 +1,10 @@
-name: Test Build
+name: "- Push Build Workflow"
 
 on:
   push:
     branches:
       - 'master'
-  pull_request:
-    branches:
-      - '*'
+  workflow_dispatch:
 
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}
@@ -16,7 +14,7 @@ jobs:
     name: Build
     uses: ./.github/workflows/build.yml
     with:
-      build-id: push
+      build-id: 'push'
     secrets: inherit
 
   release:
@@ -40,15 +38,13 @@ jobs:
       - name: Parse Forgejo payload
         shell: bash
         run: |
-          export PAYLOAD_JSON='${{ toJSON(github.event.client_payload) }}'
-          export FORGEJO_TOKEN=${{ secrets.FORGEJO_TOKEN }}
-          ./.ci/parse.sh master
+          echo "${{ toJSON(github.event.client_payload) }}" > ./payload.json
+          ./.ci/forgejo-ci.sh --parse push
 
       - name: Set environment variables
         run: |
           echo "REPO=Eden-CI/Master" >> $GITHUB_ENV
           echo "DEVEL=true" >> $GITHUB_ENV
-          echo "BUILD=test" >> $GITHUB_ENV
 
       - name: Package artifacts nicely
         run: |
@@ -56,10 +52,9 @@ jobs:
           ./pack.sh
 
       - name: Generate changelog
-        run: ./.ci/changelog/generate.sh > changelog.md
+        run: ./.ci/changelog/generate.sh push > changelog.md
 
       - name: Release
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         uses: softprops/action-gh-release@v2.2.2
         with:
           name: "Eden Continuous Build - ${{ env.FORGEJO_REF }}"
