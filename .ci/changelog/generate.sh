@@ -16,8 +16,8 @@ case "$1" in
     REF="${FORGEJO_REF}"
     ;;
   push|test)
-    TAG="continuous"
-    REF="continuous"
+    TAG="v${TIMESTAMP}.${FORGEJO_REF}"
+    REF="${FORGEJO_REF}"
     ;;
     *)
     echo "Type: $1"

@@ -48,7 +48,7 @@ jobs:
 
       - name: Package artifacts nicely
         run: |
-          export ID=continuous
+          export ID=${FORGEJO_REF}
           ./pack.sh
 
       - name: Generate changelog
