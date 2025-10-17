@@ -220,52 +220,63 @@ jobs:
           - arch: amd64
             runs-on: ubuntu-24.04
 
-    env:
-      ARCH: "${{ matrix.os.arch }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build & Package
+        uses: ./.github/workflows/debian
+        with:
+          arch: ${{ matrix.os.arch }}
+          name: ubuntu
+
+  debian-13:
+    name: "Debian 13 (${{ matrix.os.arch }})"
+    needs: [clone]
+    runs-on: ${{ matrix.os.runs-on }}
+    container: ghcr.io/nilcons/debian:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - arch: aarch64
+            runs-on: ubuntu-24.04-arm
+          - arch: amd64
+            runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install sccache
-        uses: Vee99BR/sccache-action@v0.0.1
-
-      - name: Install makedeb
-        run: |
-          chmod a+x ./.ci/deb/makedeb.sh
-          ./.ci/deb/makedeb.sh
-
-      - name: Download Forgejo environment
-        uses: actions/download-artifact@v4
+      - name: Build & Package
+        uses: ./.github/workflows/debian
         with:
-          name: forgejo-env
+          arch: ${{ matrix.os.arch }}
+          name: debian-13
 
-      - name: Load payload environment
-        shell: bash
-        run: |
-          ./.ci/forgejo.sh --load-payload-env
+  debian-12:
+    name: "Debian 12 (${{ matrix.os.arch }})"
+    needs: [clone]
+    runs-on: ${{ matrix.os.runs-on }}
+    container: ghcr.io/xrplf/ci/debian-bookworm:gcc-12
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - arch: aarch64
+            runs-on: ubuntu-24.04-arm
+          - arch: amd64
+            runs-on: ubuntu-24.04
 
-      - name: Clone
-        uses: actions/download-artifact@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build & Package
+        uses: ./.github/workflows/debian
         with:
-          name: eden
-
-      - name: Set up CPM cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/.cache
-          key: Ubuntu-${{ matrix.os.arch }}-cpm-${{ env.CPM_CACHE_VERSION }}
-
-      - name: Build
-        shell: bash
-        run: .ci/deb/build.sh
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: ubuntu-${{ matrix.os.arch }}
-          path: ./eden*.deb
+          arch: ${{ matrix.os.arch }}
+          name: debian-12
 
   linux:
     name: "Linux (${{ matrix.os.arch }}) (${{ matrix.compiler }})"
@@ -328,21 +339,7 @@ jobs:
 
       - name: Package
         shell: bash
-        run: ./.ci/linux/package.sh ${{ matrix.os.arch }}
-
-      # TODO(crueter): separate package stuff
-      - name: Package (binary)
-        run: |
-          cmake --install build --prefix install/usr
-
-          cd install
-          tar --owner root --group root --zstd -cf Eden-Linux.tar.zst *
-
-      - name: Upload Binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-binary-${{ matrix.os.arch }}-${{ matrix.compiler }}
-          path: install/Eden-Linux.tar.zst
+        run: ./.ci/linux/package.sh
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4.6.2

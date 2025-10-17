@@ -1,23 +1,37 @@
-#!/bin/sh -ex
+#!/bin/sh -e
 
 MANDB=/var/lib/man-db/auto-update
+WORKSPACE="$PWD"
 
-ROOTDIR="$PWD"
+# Use sudo if available, otherwise run directly
+if command -v sudo >/dev/null 2>&1 ; then
+	SUDO=sudo
+fi
 
-[ -f $MANDB ] && sudo rm $MANDB
+[ -f $MANDB ] && $SUDO rm $MANDB
 
-[ ! -d makedeb-src ] && git clone 'https://github.com/makedeb/makedeb' makedeb-src
-cd makedeb-src
-git checkout stable
-
-if command -v apt > /dev/null; then
-	sudo apt update
-	sudo apt install -y asciidoctor binutils build-essential curl fakeroot file \
+if command -v apt >/dev/null 2>&1 ; then
+	$SUDO apt update
+	$SUDO apt install -y asciidoctor binutils build-essential curl fakeroot file \
 		gettext gawk libarchive-tools lsb-release python3 python3-apt zstd
 fi
 
-make prepare VERSION=16.0.0 RELEASE=stable TARGET=apt CURRENT_VERSION=16.0.0 FILESYSTEM_PREFIX="$ROOTDIR/makedeb"
-make
-make package DESTDIR="$ROOTDIR/makedeb" TARGET=apt
+# if in a container (does not have sudo), make a build user and run as that
+if ! command -v sudo > /dev/null 2>&1 ; then
+	apt install -y sudo
 
-[ -n "$GITHUB_PATH" ] && echo "$ROOTDIR/makedeb/usr/bin" >> "$GITHUB_PATH"
+	useradd -m -s /bin/bash -d /build build
+	echo "build ALL=NOPASSWD: ALL" >> /etc/sudoers
+
+	# copy workspace stuff over
+	cp -r ./* .patch .ci .reuse /build
+	cp -r .cache /build || true
+
+	cd /build
+	chown -R build:build ./* .patch .ci .reuse
+	sudo -E -u build "$PWD/.ci/deb/build.sh"
+	cp ./*.deb "$WORKSPACE"
+# otherwise just run normally
+else
+	.ci/deb/build.sh
+fi
