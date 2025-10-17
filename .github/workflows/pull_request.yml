@@ -65,7 +65,7 @@ jobs:
       - name: Release (sha)
         uses: softprops/action-gh-release@v2.2.2
         with:
-          name: "${{ env.FORGEJO_TITLE }}"
+          name: "${{ env.FORGEJO_PR_TITLE }}"
           tag_name: ${{ env.FORGEJO_PR_NUMBER }}-${{ env.FORGEJO_REF }}
           repository: ${{ env.REPO }}
           body_path: ./changelog.md
@@ -81,7 +81,7 @@ jobs:
       - name: Release (PR)
         uses: softprops/action-gh-release@v2.2.2
         with:
-          name: ${{ env.FORGEJO_TITLE }}
+          name: ${{ env.FORGEJO_PR_TITLE }}
           tag_name: ${{ env.FORGEJO_PR_NUMBER }}
           repository: ${{ env.REPO }}
           body_path: ./changelog.md
