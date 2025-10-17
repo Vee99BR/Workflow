@@ -47,19 +47,25 @@ if [ "$PLATFORM" = "linux" ] || [ "$COMPILER" = "clang" ]; then
 		package-amd64)
 			echo "Making package-friendly amd64 build of Eden"
 			ARCH_FLAGS="-march=x86-64 -mtune=generic"
-			STANDALONE=true
+			STANDALONE=ON
+			PACKAGE=true
 			FFMPEG=OFF
-			BUNDLE=OFF
+			OPENSSL=OFF
+
 			;;
 		package-aarch64)
 			echo "Making package-friendly aarch64 build of Eden"
 			ARCH_FLAGS="-march=armv8-a -mtune=generic"
-			STANDALONE=true
+			STANDALONE=ON
+			PACKAGE=true
 			FFMPEG=OFF
-			BUNDLE=OFF
+			OPENSSL=OFF
+
+			# apparently gcc-arm64 on ubuntu dislikes lto
+			LTO=OFF
 			;;
 		*)
-			echo "Invalid target $1 specified, must be one of: native, amd64, steamdeck, zen2, allyx, rog-ally, zen4, legacy, aarch64, armv9"
+			echo "Invalid target $TARGET specified, must be one of: native, amd64, steamdeck, zen2, allyx, rog-ally, zen4, legacy, aarch64, armv9"
 			exit 1
 			;;
 	esac
@@ -80,9 +86,15 @@ if [ "$STEAMDECK" = "true" ]; then
 	)
 fi
 
+# Package targets use system sdl2
+if [ "$PACKAGE" = "true" ]; then
+	SDL_FLAGS=(-DYUZU_USE_BUNDLED_SDL2=OFF)
+fi
+
 export ARCH_CMAKE
 export SDL_FLAGS
 export STANDALONE
 export ARCH
-export BUNDLE
+export OPENSSL
 export FFMPEG
+export LTO
