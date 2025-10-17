@@ -221,6 +221,7 @@ jobs:
     env:
       TARGET: "${{ matrix.os.arch }}"
       COMPILER: "${{ matrix.compiler }}"
+      GITHUB_TOKEN: "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
 
     steps:
       - name: Checkout
