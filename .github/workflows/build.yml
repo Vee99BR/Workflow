@@ -170,11 +170,10 @@ jobs:
           CLANG='{"program": "clang", "target": "standard"}'
           GCC='{"program": "gcc", "target": "standard"}'
 
-          # TODO: disable pgo on non-release builds, please
           if [ "${{ inputs.build-id }}" = "tag" ]; then
             COMPILER="[${GCC},${CLANG},${PGO}]"
           else
-            COMPILER="[${GCC},${CLANG},${PGO}]"
+            COMPILER="[${GCC},${CLANG}]"
           fi
 
           echo $COMPILER
@@ -192,11 +191,10 @@ jobs:
           CLANG='{"program": "clang", "target": "standard"}'
           MSVC='{"program": "msvc", "target": "standard"}'
 
-          # TODO: disable pgo on non-release builds, please
           if [ "${{ inputs.build-id }}" = "tag" ]; then
             COMPILER="[${MSVC},${CLANG},${PGO}]"
           else
-            COMPILER="[${MSVC},${CLANG},${PGO}]"
+            COMPILER="[${MSVC},${CLANG}]"
           fi
 
           echo $COMPILER

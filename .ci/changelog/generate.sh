@@ -34,12 +34,29 @@ linux() {
 	DESCRIPTION="$3"
 
 	echo -n "| "
-	echo -n "[$PRETTY_ARCH](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${REF}-${ARCH}-${COMPILER}.AppImage) | "
+	echo -n "[$PRETTY_ARCH ($LABEL)](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${REF}-${ARCH}-${COMPILER}.AppImage) | "
 	if [ "$DEVEL" != "true" ]; then
 		echo -n "([zsync](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Linux-${REF}-${ARCH}-${COMPILER}.AppImage.zsync)) | "
 	fi
-	echo -n "$DESCRIPTION |"
+	echo -n "$DESCRIPTION ($LABEL build) |"
 	echo
+}
+
+linux_builds() {
+	LABEL="$1"
+
+	echo "| Build | Description |"
+	echo "| ----- | ----------- |"
+	linux amd64 "amd64" "For any modern AMD or Intel CPU"
+	linux steamdeck "Steam Deck" "For Steam Deck and other >= Zen 2 AMD CPUs"
+	[ "$DISABLE_ARM" != "true" ] && linux aarch64 "armv8-a" "For ARM CPUs made in mid-2021 or earlier"
+
+	if [ "$DEVEL" != "true" ]; then
+		linux legacy "amd64 (legacy)" "For CPUs older than 2013 or so"
+		linux rog-ally "ROG Ally X" "For ROG Ally X and other >= Zen 4 AMD CPUs"
+		[ "$DISABLE_ARM" != "true" ] && linux armv9 "armv9-a" "For ARM CPUs made in late 2021 or later"
+	fi
+
 }
 
 deb() {
@@ -144,45 +161,25 @@ echo "See the *Description* column for more info. Note that legacy builds will a
 echo
 
 COMPILER=gcc-standard
-echo "| Build | Description |"
-echo "| ----- | ----------- |"
-linux amd64 "amd64" "For any modern AMD or Intel CPU"
-linux steamdeck "Steam Deck" "For Steam Deck and other >= Zen 2 AMD CPUs"
-[ "$DISABLE_ARM" != "true" ] && linux aarch64 "armv8-a" "For ARM CPUs made in mid-2021 or earlier"
+linux_builds "GCC"
+
+echo
+echo "We are additionally providing experimental packages built with Clang, rather than GCC. These builds should be identical, if not faster,"
+echo "but how it affects the overall experience is currently unknown. In the future, these builds will be made with PGO to increase speed."
+echo
+
+COMPILER=clang-standard
+linux_builds "Clang"
+
 if [ "$DEVEL" != "true" ]; then
-	linux legacy "amd64 (legacy)" "For CPUs older than 2013 or so"
-	linux rog-ally "ROG Ally X" "For ROG Ally X and other >= Zen 4 AMD CPUs"
-	[ "$DISABLE_ARM" != "true" ] && linux armv9 "armv9-a" "For ARM CPUs made in late 2021 or later"
 	echo
-
-	echo "We are additionally providing experimental packages built with Clang, rather than GCC. These builds should be identical, if not faster,"
-	echo "but how it affects the overall experience is currently unknown. In the future, these builds will be made with PGO to increase speed."
-	echo
-	echo "| Build | Description |"
-	echo "| ----- | ----------- |"
-
-	COMPILER=clang-standard
-	linux legacy "amd64 (legacy) (clang)" "For CPUs older than 2013 or so (clang build)"
-	linux amd64 "amd64 (clang)" "For any modern AMD or Intel CPU (clang build)"
-	linux steamdeck "Steam Deck (clang)" "For Steam Deck and other >= Zen 2 AMD CPUs (clang build)"
-	linux rog-ally "ROG Ally X (clang)" "For ROG Ally X and other >= Zen 4 AMD CPUs (clang build)"
-	[ "$DISABLE_ARM" != "true" ] && linux aarch64 "armv8-a (clang)" "For ARM CPUs made in mid-2021 or earlier (clang build)"
-	[ "$DISABLE_ARM" != "true" ] && linux armv9 "armv9-a (clang)" "For ARM CPUs made in late 2021 or later (clang build)"
-	echo
-
 	echo "We are additionally providing experimental PGO packages. These should have improved performance, but may be unstable or have bugs."
 	echo
 	echo "| Build | Description |"
 	echo "| ----- | ----------- |"
 
 	COMPILER=clang-pgo
-	linux legacy "amd64 (legacy) (PGO)" "For CPUs older than 2013 or so (PGO build)"
-	linux amd64 "amd64 (PGO)" "For any modern AMD or Intel CPU (PGO build)"
-	linux steamdeck "Steam Deck (PGO)" "For Steam Deck and other >= Zen 2 AMD CPUs (PGO build)"
-	linux rog-ally "ROG Ally X (PGO)" "For ROG Ally X and other >= Zen 4 AMD CPUs (PGO build)"
-	[ "$DISABLE_ARM" != "true" ] && linux aarch64 "armv8-a (PGO)" "For ARM CPUs made in mid-2021 or earlier (PGO build)"
-	[ "$DISABLE_ARM" != "true" ] && linux armv9 "armv9-a (PGO)" "For ARM CPUs made in late 2021 or later (PGO build)"
-	echo
+	linux_builds "PGO"
 fi
 echo
 
