@@ -46,6 +46,6 @@ for arch in aarch64 amd64; do
 	cp ubuntu-$arch/*.deb "artifacts/Eden-Ubuntu-24.04-${ID}-$arch.deb"
 
 	for ver in 12 13; do
-		cp debian-$ver-$arch "artifacts/Eden-Debian-$ver-${ID}-$arch.deb"
+		cp debian-$ver-$arch/*.deb "artifacts/Eden-Debian-$ver-${ID}-$arch.deb"
 	done
 done

@@ -30,6 +30,7 @@ if ! command -v sudo > /dev/null 2>&1 ; then
 	cd /build
 	chown -R build:build ./* .patch .ci .reuse
 	sudo -E -u build "$PWD/.ci/deb/build.sh"
+	mv .cache "$WORKSPACE"
 	cp ./*.deb "$WORKSPACE"
 # otherwise just run normally
 else
