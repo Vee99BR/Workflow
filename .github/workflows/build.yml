@@ -110,8 +110,6 @@ jobs:
         run: |
           ./.ci/forgejo.sh --summary ${{ inputs.build-id }}
 
-
-  # TODO(crueter): Each dependent job should use the source pack
   source:
     name: "Source Pack"
     runs-on: ubuntu-latest
@@ -141,7 +139,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set.outputs.matrix }}
-      compilers: ${{ steps.set.outputs.compilers }}
+      compiler: ${{ steps.set.outputs.compiler }}
     steps:
       - id: set
         run: |
@@ -168,14 +166,41 @@ jobs:
           echo $MATRIX
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
 
+          PGO='{"program": "clang", "target": "pgo"}'
+          CLANG='{"program": "clang", "target": "standard"}'
+          GCC='{"program": "gcc", "target": "standard"}'
+
+          # TODO: disable pgo on non-release builds, please
           if [ "${{ inputs.build-id }}" = "tag" ]; then
-            COMPILERS='["clang", "gcc"]'
+            COMPILER="[${GCC},${CLANG},${PGO}]"
           else
-            COMPILERS='["gcc"]'
+            COMPILER="[${GCC},${CLANG},${PGO}]"
           fi
 
-          echo $COMPILERS
-          echo "compilers=${COMPILERS}" >> $GITHUB_OUTPUT
+          echo $COMPILER
+          echo "compiler=${COMPILER}" >> $GITHUB_OUTPUT
+
+  win-matrix:
+    name: "Generate Windows compilers"
+    runs-on: ubuntu-latest
+    outputs:
+      compiler: ${{ steps.set.outputs.compiler }}
+    steps:
+      - id: set
+        run: |
+          PGO='{"program": "clang", "target": "pgo"}'
+          CLANG='{"program": "clang", "target": "standard"}'
+          MSVC='{"program": "msvc", "target": "standard"}'
+
+          # TODO: disable pgo on non-release builds, please
+          if [ "${{ inputs.build-id }}" = "tag" ]; then
+            COMPILER="[${MSVC},${CLANG},${PGO}]"
+          else
+            COMPILER="[${MSVC},${CLANG},${PGO}]"
+          fi
+
+          echo $COMPILER
+          echo "compiler=${COMPILER}" >> $GITHUB_OUTPUT
 
   check-android-secrets:
     name: Check Android Secrets
@@ -279,7 +304,7 @@ jobs:
           name: debian-12
 
   linux:
-    name: "Linux (${{ matrix.os.arch }}) (${{ matrix.compiler }})"
+    name: "Linux (${{ matrix.os.arch }}) (${{ matrix.compiler.program }} ${{ matrix.compiler.target }}) "
     needs: [set-matrix, clone]
     runs-on: ${{ matrix.os.runs-on }}
     container: ghcr.io/pkgforge-dev/archlinux:latest
@@ -287,12 +312,14 @@ jobs:
       fail-fast: false
       matrix:
         os: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
-        compiler: ${{ fromJson(needs.set-matrix.outputs.compilers) }}
+        compiler: ${{ fromJson(needs.set-matrix.outputs.compiler) }}
 
     env:
       TARGET: "${{ matrix.os.arch }}"
-      COMPILER: "${{ matrix.compiler }}"
+      COMPILER: "${{ matrix.compiler.program }}"
+      PGO_TARGET: "${{ matrix.compiler.target }}"
       GITHUB_TOKEN: "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+      FULL_ARCH: ${{ matrix.os.arch }}-${{ matrix.compiler.program }}-${{ matrix.compiler.target }}
 
     steps:
       # TODO(crueter): can we make this less repetitive?
@@ -327,7 +354,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache
-          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-${{ env.CPM_CACHE_VERSION }}
+          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler.program }}-cpm-${{ env.CPM_CACHE_VERSION }}
 
       - name: Configure
         shell: bash
@@ -344,12 +371,12 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: linux-${{ matrix.os.arch }}-${{ matrix.compiler }}
+          name: linux-${{ matrix.os.arch }}-${{ matrix.compiler.program }}-${{ matrix.compiler.target }}
           path: ./*.AppImage*
 
   windows:
-    name: "Windows ${{ matrix.os.arch }} (${{ matrix.compiler }})"
-    needs: [clone]
+    name: "Windows ${{ matrix.os.arch }} (${{ matrix.compiler.program }} ${{ matrix.compiler.target }})"
+    needs: [win-matrix, clone]
     runs-on: ${{ matrix.os.runs-on }}
     strategy:
       fail-fast: false
@@ -359,10 +386,14 @@ jobs:
             arch: amd64
           - runs-on: windows-11-arm
             arch: arm64
-        compiler: [clang, msvc]
+        compiler: ${{ fromJson(needs.win-matrix.outputs.compiler) }}
+
     env:
       QT_VERSION: 6.9.1
       TARGET: ${{ matrix.os.arch }}
+      COMPILER: "${{ matrix.compiler.program }}"
+      PGO_TARGET: "${{ matrix.compiler.target }}"
+      ARCH: ${{ matrix.os.arch }}-${{ matrix.compiler.program }}-${{ matrix.compiler.target }}
 
     steps:
       - name: Checkout
@@ -376,11 +407,6 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           cache: 'true'
-
-      - name: Set build variables
-        shell: bash
-        run: |
-          echo "COMPILER=${{ matrix.compiler }}" >> $GITHUB_ENV
 
       - name: Download Forgejo environment
         uses: actions/download-artifact@v4
@@ -402,7 +428,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache
-          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-${{ env.CPM_CACHE_VERSION }}
+          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler.program }}-cpm-${{ env.CPM_CACHE_VERSION }}
 
       - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -434,25 +460,18 @@ jobs:
 
       - name: Package
         shell: bash
-        run: ARCH=${{ matrix.os.arch }}-${{ matrix.compiler }} ./.ci/windows/package.sh
+        run: ./.ci/windows/package.sh
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: windows-${{ matrix.os.arch }}-${{ matrix.compiler }}
+          name: windows-${{ env.ARCH }}
           path: artifacts/*
 
   android:
     name: "Android"
     needs: [clone, check-android-secrets]
-    runs-on: ${{ matrix.os.runs-on }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - runs-on: ubuntu-latest
-            arch: amd64
-        compiler: [universal]
+    runs-on: ubuntu-latest
 
     if: |
       needs.check-android-secrets.outputs.CI_SECRETS_STATUS == 'true' ||
@@ -508,7 +527,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache
-          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-${{ env.CPM_CACHE_VERSION }}
+          key: ${{ runner.os }}-amd64-universal-cpm-${{ env.CPM_CACHE_VERSION }}
 
       - name: Build
         run: |
@@ -534,7 +553,7 @@ jobs:
           path: artifacts/*.aab
 
   macos:
-    name: "macOS"
+    name: "macOS (${{ matrix.os.arch }})"
     needs: [clone]
     runs-on: ${{ matrix.os.runs-on }}
     strategy:
@@ -599,7 +618,7 @@ jobs:
           path: artifacts/*
 
   unix:
-    name: "Unix"
+    name: "${{ matrix.os.name }} (${{ matrix.os.arch }})"
     needs: [clone]
     runs-on: ubuntu-latest
     strategy:

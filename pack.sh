@@ -5,36 +5,43 @@ mkdir -p artifacts
 ARCHES="amd64 steamdeck"
 
 [ "$DISABLE_ARM" != "true" ] && ARCHES="$ARCHES aarch64"
-COMPILERS="gcc"
+COMPILERS="gcc clang"
 if [ "$DEVEL" = "false" ]; then
-  ARCHES="$ARCHES legacy rog-ally"
-  [ "$DISABLE_ARM" != "true" ] && ARCHES="$ARCHES armv9"
-  COMPILERS="$COMPILERS clang"
+	ARCHES="$ARCHES legacy rog-ally"
+	[ "$DISABLE_ARM" != "true" ] && ARCHES="$ARCHES armv9"
+	# COMPILERS="$COMPILERS clang"
 fi
 
-for arch in $ARCHES
-do
-  for compiler in $COMPILERS; do
-    ARTIFACT="Eden-Linux-${ID}-${arch}-${compiler}"
+for arch in $ARCHES; do
+	for compiler in $COMPILERS; do
+		ARTIFACT="Eden-Linux-${ID}-${arch}-${compiler}"
 
-    cp "linux-$arch-$compiler"/*.AppImage "artifacts/$ARTIFACT.AppImage"
-    if [ "$DEVEL" = "false" ]; then
-      cp "linux-$arch-$compiler"/*.AppImage.zsync "artifacts/$ARTIFACT.AppImage.zsync"
-    fi
-  done
+		cp "linux-$arch-$compiler-standard"/*.AppImage "artifacts/$ARTIFACT.AppImage"
+		if [ "$DEVEL" = "false" ]; then
+			cp "linux-$arch-$compiler-standard"/*.AppImage.zsync "artifacts/$ARTIFACT.AppImage.zsync"
+		fi
+	done
+
+	ARTIFACT="Eden-Linux-${ID}-${arch}-clang-pgo"
+
+	cp "linux-$arch-clang-pgo"/*.AppImage.zsync "artifacts/$ARTIFACT.AppImage.zsync"
+
+	# TODO: put this in devel = false
+	cp "linux-$arch-clang-pgo"/*.AppImage "artifacts/$ARTIFACT.AppImage"
 done
 
 cp android/*.apk "artifacts/Eden-Android-${ID}.apk"
 
-for arch in amd64 arm64
-do
-  for compiler in clang msvc; do
-    cp "windows-$arch-${compiler}"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-${compiler}.zip"
-  done
+for arch in amd64 arm64; do
+	for compiler in clang msvc; do
+		cp "windows-$arch-${compiler}-standard"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-${compiler}.zip"
+	done
+
+	cp "windows-$arch-clang-pgo"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-clang-pgo.zip"
 done
 
 if [ -d "source" ]; then
-  cp source/source.tar.zst "artifacts/Eden-Source-${ID}.tar.zst"
+	cp source/source.tar.zst "artifacts/Eden-Source-${ID}.tar.zst"
 fi
 
 cp -r macos/*.tar.gz "artifacts/Eden-macOS-${ID}.tar.gz"

@@ -30,8 +30,6 @@ export OPTIMIZE_LAUNCH=1
 export DEPLOY_OPENGL=1
 export DEPLOY_VULKAN=1
 
-. .ci/common/targets.sh
-
 BUILDDIR=${BUILDDIR:-build}
 
 if [ -d "${BUILDDIR}/bin/Release" ]; then
@@ -43,8 +41,8 @@ fi
 VERSION=$(cat GIT-TAG)
 echo "Making \"$VERSION\" build"
 
-export OUTNAME="Eden-$VERSION-$ARCH.AppImage"
-UPINFO="gh-releases-zsync|eden-emulator|Releases|latest|*-$ARCH.AppImage.zsync"
+export OUTNAME="Eden-$VERSION-$FULL_ARCH.AppImage"
+UPINFO="gh-releases-zsync|eden-emulator|Releases|latest|*-$FULL_ARCH.AppImage.zsync"
 
 if [ "$DEVEL" = 'true' ]; then
     case "$(uname)" in
