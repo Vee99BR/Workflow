@@ -3,22 +3,10 @@ name: Master Build Workflow
 on:
   workflow_call:
     inputs:
-      build-type:
-        description: 'What build type to use (e.g. RelWithDebInfo, Release)'
-        type: string
-        default: 'Release'
       devel:
         description: 'Development mode (disables update checker, adds nightly qualifier)'
         type: boolean
         default: true
-      webengine:
-        description: 'Use QtWebEngine. Increases build size by 60-90MB.'
-        type: boolean
-        default: false
-      multimedia:
-        description: 'Use QtMultimedia. Increases build size by 20MB.'
-        type: boolean
-        default: false
       build-id:
         description: 'Identifier for workflows and caching'
         type: string
@@ -31,12 +19,11 @@ env:
   CPM_CACHE_VERSION: "v7"
   FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
   DEVEL: ${{ inputs.devel }}
-  BUILD_TYPE: ${{ inputs.build-type }}
-  USE_WEBENGINE: ${{ inputs.webengine }}
-  USE_MULTIMEDIA: ${{ inputs.multimedia }}
 
 jobs:
   clone:
+    outputs:
+      cachever: ${{ steps.out.outputs.cachever }}
     name: "Parse and Clone"
     runs-on: ubuntu-latest
 
@@ -57,6 +44,18 @@ jobs:
         shell: bash
         run: |
           ./.ci/forgejo.sh --load-payload-env
+
+      - name: summary
+        shell: bash
+        run: |
+          ./.ci/forgejo.sh --summary ${{ inputs.build-id }}
+
+      # for some amazing reason you can't pass env vars to reusable workflows
+      - name: Setup Outputs
+        id: out
+        shell: bash
+        run: |
+          echo "cachever=${CPM_CACHE_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Clone
         shell: bash
@@ -87,29 +86,6 @@ jobs:
             eden/*
             eden/.patch
 
-  summary:
-    name: "Summary"
-    runs-on: ubuntu-latest
-    needs: [clone]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download Forgejo environment
-        uses: actions/download-artifact@v4
-        with:
-          name: forgejo-env
-
-      - name: Load payload environment
-        shell: bash
-        run: |
-          ./.ci/forgejo.sh --load-payload-env
-
-      - name: Create job summary
-        run: |
-          ./.ci/forgejo.sh --summary ${{ inputs.build-id }}
-
   source:
     name: "Source Pack"
     runs-on: ubuntu-latest
@@ -134,573 +110,62 @@ jobs:
           name: source
           path: source.*
 
-  set-matrix:
-    name: "Generate Linux matrix"
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set.outputs.matrix }}
-      compiler: ${{ steps.set.outputs.compiler }}
-    steps:
-      - id: set
-        run: |
-          BASE='[{"runs-on": "ubuntu-latest", "arch": "amd64"},{"runs-on": "ubuntu-latest", "arch": "steamdeck"}'
-          ARM=',{"runs-on": "ubuntu-24.04-arm", "arch": "aarch64"}'
-
-          if [ "${{ env.DISABLE_ARM }}" != true ]; then
-            BASE="${BASE}${ARM}"
-          fi
-
-          EXTRA=',{"runs-on": "ubuntu-latest", "arch": "legacy"},{"runs-on": "ubuntu-latest", "arch": "rog-ally"}'
-          ARM=',{"runs-on": "ubuntu-24.04-arm", "arch": "armv9"}'
-
-          if [ "${{ env.DISABLE_ARM }}" != true ]; then
-            EXTRA="${EXTRA}${ARM}"
-          fi
-
-          if [ "${{ inputs.build-id }}" = "tag" ]; then
-            MATRIX="${BASE}${EXTRA}]"
-          else
-            MATRIX="${BASE}]"
-          fi
-
-          echo $MATRIX
-          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
-
-          PGO='{"program": "clang", "target": "pgo"}'
-          CLANG='{"program": "clang", "target": "standard"}'
-          GCC='{"program": "gcc", "target": "standard"}'
-
-          if [ "${{ inputs.build-id }}" = "tag" ]; then
-            COMPILER="[${GCC},${CLANG},${PGO}]"
-          else
-            COMPILER="[${GCC},${CLANG}]"
-          fi
-
-          echo $COMPILER
-          echo "compiler=${COMPILER}" >> $GITHUB_OUTPUT
-
-  win-matrix:
-    name: "Generate Windows compilers"
-    runs-on: ubuntu-latest
-    outputs:
-      compiler: ${{ steps.set.outputs.compiler }}
-    steps:
-      - id: set
-        run: |
-          PGO='{"program": "clang", "target": "pgo"}'
-          CLANG='{"program": "clang", "target": "standard"}'
-          MSVC='{"program": "msvc", "target": "standard"}'
-
-          if [ "${{ inputs.build-id }}" = "tag" ]; then
-            COMPILER="[${MSVC},${CLANG},${PGO}]"
-          else
-            COMPILER="[${MSVC},${CLANG}]"
-          fi
-
-          echo $COMPILER
-          echo "compiler=${COMPILER}" >> $GITHUB_OUTPUT
-
-  check-android-secrets:
-    name: Check Android Secrets
-    runs-on: ubuntu-latest
-    outputs:
-      CI_SECRETS_STATUS: ${{ steps.check.outputs.CI_SECRETS_STATUS }}
-      CI_PR_FORK: ${{ steps.check.outputs.CI_PR_FORK }}
-    steps:
-      - id: check
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ] && \
-             [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
-            echo "CI_PR_FORK=true" >> $GITHUB_OUTPUT
-          else
-            echo "CI_PR_FORK=false" >> $GITHUB_OUTPUT
-          fi
-
-          if [ -z "${ANDROID_KEYSTORE_B64}" ] || \
-             [ -z "${ANDROID_KEY_ALIAS}" ] || \
-             [ -z "${ANDROID_KEYSTORE_PASS}" ]; then
-            echo "Android secrets missing, skipping Android-dependent jobs."
-            echo "CI_SECRETS_STATUS=false" >> $GITHUB_OUTPUT
-          else
-            echo "All Android secrets are present."
-            echo "CI_SECRETS_STATUS=true" >> $GITHUB_OUTPUT
-          fi
-        env:
-          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-
-  ubuntu:
-    name: "Ubuntu 24.04 (${{ matrix.os.arch }})"
+  deb:
+    name: ".deb builds"
     needs: [clone]
-    runs-on: ${{ matrix.os.runs-on }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - arch: aarch64
-            runs-on: ubuntu-24.04-arm
-          - arch: amd64
-            runs-on: ubuntu-24.04
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build & Package
-        uses: ./.github/workflows/debian
-        with:
-          arch: ${{ matrix.os.arch }}
-          name: ubuntu
-
-  debian-13:
-    name: "Debian 13 (${{ matrix.os.arch }})"
-    needs: [clone]
-    runs-on: ${{ matrix.os.runs-on }}
-    container: ghcr.io/nilcons/debian:latest
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - arch: aarch64
-            runs-on: ubuntu-24.04-arm
-          - arch: amd64
-            runs-on: ubuntu-24.04
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build & Package
-        uses: ./.github/workflows/debian
-        with:
-          arch: ${{ matrix.os.arch }}
-          name: debian-13
-
-  debian-12:
-    name: "Debian 12 (${{ matrix.os.arch }})"
-    needs: [clone]
-    runs-on: ${{ matrix.os.runs-on }}
-    container: ghcr.io/xrplf/ci/debian-bookworm:gcc-12
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - arch: aarch64
-            runs-on: ubuntu-24.04-arm
-          - arch: amd64
-            runs-on: ubuntu-24.04
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build & Package
-        uses: ./.github/workflows/debian
-        with:
-          arch: ${{ matrix.os.arch }}
-          name: debian-12
+    uses: ./.github/workflows/deb.yml
+    with:
+      build-id: '${{ inputs.build-id }}'
+      cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
+      devel: ${{ inputs.devel }}
+    secrets: inherit
 
   linux:
-    name: "Linux (${{ matrix.os.arch }}) (${{ matrix.compiler.program }} ${{ matrix.compiler.target }}) "
-    needs: [set-matrix, clone]
-    runs-on: ${{ matrix.os.runs-on }}
-    container: ghcr.io/pkgforge-dev/archlinux:latest
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
-        compiler: ${{ fromJson(needs.set-matrix.outputs.compiler) }}
-
-    env:
-      TARGET: "${{ matrix.os.arch }}"
-      COMPILER: "${{ matrix.compiler.program }}"
-      PGO_TARGET: "${{ matrix.compiler.target }}"
-      GITHUB_TOKEN: "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
-      FULL_ARCH: ${{ matrix.os.arch }}-${{ matrix.compiler.program }}-${{ matrix.compiler.target }}
-
-    steps:
-      # TODO(crueter): can we make this less repetitive?
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install sccache
-        uses: Vee99BR/sccache-action@v0.0.1
-
-      - name: Install dependencies
-        run: |
-          chmod a+x ./.ci/linux/deps.sh
-          ./.ci/linux/deps.sh
-
-      - name: Download Forgejo environment
-        uses: actions/download-artifact@v4
-        with:
-          name: forgejo-env
-
-      - name: Load payload environment
-        shell: bash
-        run: |
-          ./.ci/forgejo.sh --load-payload-env
-
-      - name: Clone
-        uses: actions/download-artifact@v4
-        with:
-          name: eden
-
-      - name: Set up CPM cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/.cache
-          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler.program }}-cpm-${{ env.CPM_CACHE_VERSION }}
-
-      - name: Configure
-        shell: bash
-        run:  .ci/common/configure.sh -DCCACHE_PATH=${SCCACHE_PATH}
-
-      - name: Build
-        shell: bash
-        run: cmake --build build
-
-      - name: Package
-        shell: bash
-        run: ./.ci/linux/package.sh
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: linux-${{ matrix.os.arch }}-${{ matrix.compiler.program }}-${{ matrix.compiler.target }}
-          path: ./*.AppImage*
+    name: "AppImage"
+    needs: [clone]
+    uses: ./.github/workflows/appimage.yml
+    with:
+      build-id: '${{ inputs.build-id }}'
+      cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
+      devel: ${{ inputs.devel }}
+    secrets: inherit
 
   windows:
-    name: "Windows ${{ matrix.os.arch }} (${{ matrix.compiler.program }} ${{ matrix.compiler.target }})"
-    needs: [win-matrix, clone]
-    runs-on: ${{ matrix.os.runs-on }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - runs-on: windows-latest
-            arch: amd64
-          - runs-on: windows-11-arm
-            arch: arm64
-        compiler: ${{ fromJson(needs.win-matrix.outputs.compiler) }}
-
-    env:
-      QT_VERSION: 6.9.1
-      TARGET: ${{ matrix.os.arch }}
-      COMPILER: "${{ matrix.compiler.program }}"
-      PGO_TARGET: "${{ matrix.compiler.target }}"
-      ARCH: ${{ matrix.os.arch }}-${{ matrix.compiler.program }}-${{ matrix.compiler.target }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install sccache
-        uses: Vee99BR/sccache-action@v0.0.1
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4.3.0
-        with:
-          version: ${{ env.QT_VERSION }}
-          cache: 'true'
-
-      - name: Download Forgejo environment
-        uses: actions/download-artifact@v4
-        with:
-          name: forgejo-env
-
-      - name: Load payload environment
-        shell: bash
-        run: |
-          ./.ci/forgejo.sh --load-payload-env
-
-      - name: Clone
-        uses: actions/download-artifact@v4
-        with:
-          name: eden
-
-      - name: Set up CPM cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/.cache
-          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler.program }}-cpm-${{ env.CPM_CACHE_VERSION }}
-
-      - name: Set up MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: ${{ matrix.os.arch }}
-
-      - name: Force Clang 20
-        if: matrix.compiler == 'clang'
-        shell: bash
-        run: |
-          echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH
-          clang-cl --version
-
-      - name: Install Vulkan SDK
-        shell: powershell
-        run: |
-          ./.ci/windows/install-vulkan-sdk.ps1
-
-      - name: Configure
-        shell: bash
-        run: |
-          git config --global core.autocrlf off
-          dos2unix .patch/boost/*
-          .ci/common/configure.sh -DCCACHE_PATH=${SCCACHE_PATH}
-
-      - name: Build
-        shell: bash
-        run: cmake --build build
-
-      - name: Package
-        shell: bash
-        run: ./.ci/windows/package.sh
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: windows-${{ env.ARCH }}
-          path: artifacts/*
+    name: "Windows"
+    needs: [clone]
+    uses: ./.github/workflows/windows.yml
+    with:
+      build-id: '${{ inputs.build-id }}'
+      cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
+      devel: ${{ inputs.devel }}
+    secrets: inherit
 
   android:
     name: "Android"
-    needs: [clone, check-android-secrets]
-    runs-on: ubuntu-latest
-
-    if: |
-      needs.check-android-secrets.outputs.CI_SECRETS_STATUS == 'true' ||
-      needs.check-android-secrets.outputs.CI_PR_FORK == 'true'
-    steps:
-      - name: Check Android secrets
-        run: |
-          if [ "${{ needs.check-android-secrets.outputs.CI_PR_FORK }}" = "true" ]; then
-            echo "This is a pull request, skipping sensitive Android steps"
-            echo "CI_PR_FORK=true" >> $GITHUB_ENV
-          fi
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Disable man-db updates
-        run: sudo rm /var/lib/man-db/auto-update
-
-      - name: Install sccache
-        uses: Vee99BR/sccache-action@v0.0.1
-
-      - name: Install dependencies
-        run: |
-          ./.ci/android/deps.sh
-
-      - name: Download Forgejo environment
-        uses: actions/download-artifact@v4
-        with:
-          name: forgejo-env
-
-      - name: Load payload environment
-        shell: bash
-        run: |
-          ./.ci/forgejo.sh --load-payload-env
-
-      - name: Clone
-        uses: actions/download-artifact@v4
-        with:
-          name: eden
-
-      - name: Install gradle-cache
-        uses: burrunan/gradle-cache-action@v3
-        with:
-          job-id: android
-          gradle-version: wrapper
-          save-local-build-cache: true
-          save-gradle-dependencies-cache: true
-          remote-build-cache-proxy-enabled: true
-          build-root-directory: src/android
-
-      - name: Set up CPM cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/.cache
-          key: ${{ runner.os }}-amd64-universal-cpm-${{ env.CPM_CACHE_VERSION }}
-
-      - name: Build
-        run: |
-          JAVA_HOME=$JAVA_HOME_17_X64 DEVEL=true ./.ci/android/build.sh -DCCACHE_PATH=${SCCACHE_PATH}
-        env:
-          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-
-      - name: Package
-        run: ./.ci/android/package.sh
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: android
-          path: artifacts/*.apk
-
-      - name: Upload AAB
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: android-aab
-          path: artifacts/*.aab
+    needs: [clone]
+    uses: ./.github/workflows/android.yml
+    with:
+      build-id: '${{ inputs.build-id }}'
+      cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
+      devel: ${{ inputs.devel }}
+    secrets: inherit
 
   macos:
-    name: "macOS (${{ matrix.os.arch }})"
+    name: "macOS"
     needs: [clone]
-    runs-on: ${{ matrix.os.runs-on }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - runs-on: macos-latest
-            arch: arm64
-        compiler: [universal]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install sccache
-        uses: Vee99BR/sccache-action@v0.0.1
-
-      - name: Install dependencies
-        run: ./.ci/macos/deps.sh
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: 6.7.3
-          cache: 'true'
-
-      - name: Download Forgejo environment
-        uses: actions/download-artifact@v4
-        with:
-          name: forgejo-env
-
-      - name: Load payload environment
-        shell: bash
-        run: |
-          ./.ci/forgejo.sh --load-payload-env
-
-      - name: Clone
-        uses: actions/download-artifact@v4
-        with:
-          name: eden
-
-      - name: Set up CPM cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/.cache
-          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler }}-cpm-${{ env.CPM_CACHE_VERSION }}
-
-      - name: Configure
-        run: .ci/common/configure.sh -DCCACHE_PATH=${SCCACHE_PATH}
-
-      - name: Build
-        run: cmake --build build
-
-      - name: Package
-        run: ./.ci/macos/package.sh
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: macos
-          path: artifacts/*
+    uses: ./.github/workflows/macos.yml
+    with:
+      build-id: '${{ inputs.build-id }}'
+      cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
+      devel: ${{ inputs.devel }}
+    secrets: inherit
 
   unix:
-    name: "${{ matrix.os.name }} (${{ matrix.os.arch }})"
+    name: "UNIX"
     needs: [clone]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - platform: freebsd
-            name: FreeBSD
-            arch: amd64
-            vm-arch: x86_64
-        compiler: [clang]
-    env:
-      ARCH: ${{ matrix.os.arch }}
-      SCCACHE_DIR: ${{ github.workspace }}/.sccache
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Disable man-db updates
-        run: sudo rm /var/lib/man-db/auto-update
-
-      - name: Download cloned repo
-        uses: actions/download-artifact@v4
-        with:
-          name: eden
-
-      - name: Download Forgejo environment
-        uses: actions/download-artifact@v4
-        with:
-          name: forgejo-env
-
-      - name: Load payload environment
-        shell: bash
-        run: |
-          ./.ci/forgejo.sh --load-payload-env
-
-      - name: Configure sccache
-        uses: actions/github-script@v8
-        with:
-          script: |
-            core.exportVariable('ACTIONS_RESULTS_URL', process.env.ACTIONS_RESULTS_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-            core.exportVariable('ACTIONS_CACHE_SERVICE_V2', `on`);
-
-      - name: Build (FreeBSD)
-        if: matrix.os.platform == 'freebsd'
-        uses: vmactions/freebsd-vm@v1
-        with:
-          arch: ${{ matrix.os.vm-arch }}
-          usesh: true
-          envs: 'ARCH BUILD_TYPE DEVEL USE_WEBENGINE USE_MULTIMEDIA CCACHE SCCACHE_DIR SCCACHE_GHA_ENABLED ACTIONS_RESULTS_URL ACTIONS_RUNTIME_TOKEN ACTIONS_CACHE_SERVICE_V2'
-          prepare: |
-            pkg install -y \
-              devel/sccache \
-              ftp/wget \
-              shells/bash
-          run: |
-            export SCCACHE_PATH=$(which sccache)
-            chmod +x ./.ci/freebsd/*
-
-            echo "- Install dependencies"
-            bash ./.ci/freebsd/deps.sh
-
-            echo "- Configure"
-            bash -ex .ci/common/configure.sh -DCCACHE_PATH=${SCCACHE_PATH}
-
-            echo "- Build"
-            cmake --build build
-
-            echo "### SCCache stats" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            ${SCCACHE_PATH} --show-stats >> "$GITHUB_STEP_SUMMARY" 2>&1
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-
-            echo "- Package"
-            bash ./.ci/freebsd/package.sh ${ARCH}
-
-            cmake --install build --prefix install/usr
-            cd install
-            tar --owner root --group root --zstd -cf Eden-FreeBSD.tar.zst *
-
-      - name: Upload Binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.os.platform }}-binary-${{ matrix.os.arch }}-${{ matrix.compiler }}
-          path: install/Eden-${{ matrix.os.name }}.tar.zst
+    uses: ./.github/workflows/unix.yml
+    with:
+      build-id: '${{ inputs.build-id }}'
+      cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
+      devel: ${{ inputs.devel }}
+    secrets: inherit
