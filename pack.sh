@@ -14,7 +14,7 @@ fi
 
 for arch in $ARCHES; do
 	for compiler in $COMPILERS; do
-		ARTIFACT="Eden-Linux-${ID}-${arch}-${compiler}"
+		ARTIFACT="Eden-Linux-${ID}-${arch}-${compiler}-standard"
 
 		cp "linux-$arch-$compiler-standard"/*.AppImage "artifacts/$ARTIFACT.AppImage"
 		if [ "$DEVEL" = "false" ]; then
