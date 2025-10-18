@@ -34,7 +34,7 @@ cp android/*.apk "artifacts/Eden-Android-${ID}.apk"
 
 for arch in amd64 arm64; do
 	for compiler in clang msvc; do
-		cp "windows-$arch-${compiler}-standard"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-${compiler}.zip"
+		cp "windows-$arch-${compiler}-standard"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-${compiler}-standard.zip"
 	done
 
 	if [ "$DEVEL" != "true" ]; then
