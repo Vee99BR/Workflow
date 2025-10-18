@@ -78,6 +78,7 @@ jobs:
         uses: ./.github/workflows/setup
         with:
           key: ${{ runner.os }}-amd64-universal
+          version: ${{ inputs.cpm-cache-version }}
 
       - name: Install dependencies
         run: |

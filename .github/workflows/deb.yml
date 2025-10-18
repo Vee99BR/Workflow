@@ -45,6 +45,8 @@ jobs:
         with:
           arch: ${{ matrix.os.arch }}
           name: ubuntu
+          cpm-cache-version: ${{ inputs.cpm-cache-version }}
+          devel: ${{ inputs.devel }}
 
   debian-13:
     name: "Debian 13 (${{ matrix.os.arch }})"
@@ -68,6 +70,8 @@ jobs:
         with:
           arch: ${{ matrix.os.arch }}
           name: debian-13
+          cpm-cache-version: ${{ inputs.cpm-cache-version }}
+          devel: ${{ inputs.devel }}
 
   debian-12:
     name: "Debian 12 (${{ matrix.os.arch }})"
@@ -91,4 +95,6 @@ jobs:
         with:
           arch: ${{ matrix.os.arch }}
           name: debian-12
+          cpm-cache-version: ${{ inputs.cpm-cache-version }}
+          devel: ${{ inputs.devel }}
 
