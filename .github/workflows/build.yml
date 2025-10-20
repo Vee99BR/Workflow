@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5.0.0
         with:
           fetch-depth: 0
 
@@ -51,7 +51,7 @@ jobs:
         if: ${{ inputs.build-id == 'master' || inputs.build-id == 'pull_request' }}
         shell: bash
         run: |
-          python ./.ci/common/status.py start
+          python ./.ci/common/status.py pending
 
       # for some amazing reason you can't pass env vars to reusable workflows
       - name: Setup Outputs
@@ -73,13 +73,6 @@ jobs:
           git -C eden apply ../${TEMP_PATCH}.patch
           rm ${TEMP_PATCH}.patch
 
-      # TODO: wait for properly fix FORGEJO_PR_MERGE_BASE
-      # <https://codeberg.org/forgejo/forgejo/issues/9601>
-      - name: ReLoad payload environment
-        shell: bash
-        run: |
-          . ./.ci/common/load-env.sh --load-payload-env
-
       - name: Summary
         shell: bash
         run: |
@@ -90,13 +83,13 @@ jobs:
           rm -rf eden/.git* eden/.ci eden/.github
 
       - name: Upload payload environment
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: forgejo-env
           path: forgejo.env
 
       - name: Upload cloned repo
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: eden
           include-hidden-files: true
@@ -111,10 +104,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5.0.0
 
       - name: Clone
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5.0.0
 
       - name: Build
         run: ./.ci/source/build.sh
@@ -194,17 +187,12 @@ jobs:
     if: ${{ always() && cancelled() && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Download payload environment
-        uses: actions/download-artifact@v4
-        with:
-          name: forgejo-env
-
-      - name: Load payload environment
+      - uses: actions/checkout@v5.0.0
+      - name: Load payload env and send status
         run: |
-          . ./.ci/common/load-env.sh --load-payload-env
-          python3 ./.ci/common/status.py cancelled
+          echo FORGEJO_REPO=${{ github.event.client_payload.repository }} >> "$GITHUB_ENV"
+          echo FORGEJO_REF=${{ github.event.client_payload.ref }} >> "$GITHUB_ENV"
+          python3 ./.ci/common/status.py error
 
   status-if-failure:
     name: "Send Failure Commit Status to Forgejo"
@@ -212,16 +200,11 @@ jobs:
     if: ${{ always() && failure() && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Download payload environment
-        uses: actions/download-artifact@v4
-        with:
-          name: forgejo-env
-
-      - name: Load payload environment
+      - uses: actions/checkout@v5.0.0
+      - name: Load payload env and send status
         run: |
-          . ./.ci/common/load-env.sh --load-payload-env
+          echo FORGEJO_REPO=${{ github.event.client_payload.repository }} >> "$GITHUB_ENV"
+          echo FORGEJO_REF=${{ github.event.client_payload.ref }} >> "$GITHUB_ENV"
           python3 ./.ci/common/status.py failure
 
   status-if-success:
@@ -230,14 +213,9 @@ jobs:
     if: ${{ always() && success() && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Download payload environment
-        uses: actions/download-artifact@v4
-        with:
-          name: forgejo-env
-
-      - name: Load payload environment
+      - uses: actions/checkout@v5.0.0
+      - name: Load payload env and send status
         run: |
-          . ./.ci/common/load-env.sh --load-payload-env
+          echo FORGEJO_REPO=${{ github.event.client_payload.repository }} >> "$GITHUB_ENV"
+          echo FORGEJO_REF=${{ github.event.client_payload.ref }} >> "$GITHUB_ENV"
           python3 ./.ci/common/status.py success

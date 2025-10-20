@@ -6,43 +6,13 @@ on:
 
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}
-  BUILD_ID: "tag"
 
 jobs:
-  concurrency-check:
-    outputs:
-      concurrency_group: ${{ steps.concurrency.outputs.group_key }}
-      cancel_in_progress: ${{ steps.concurrency.outputs.cancel_in_progress }}
-    name: "Concurrency Check"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Define Concurrency group
-        id: concurrency
-        shell: bash
-        run: |
-          FORGEJO_BRANCH="${{ github.event.client_payload.branch }}"
-          FORGEJO_PR_NUMBER="${{ github.event.client_payload.number }}"
-          if [[ -n "${FORGEJO_PR_NUMBER}" ]]; then
-            GROUP_KEY="pr-${BUILD_ID}-${FORGEJO_PR_NUMBER}"
-            CANCEL_IN_PROGRESS=true
-          else
-            GROUP_KEY="branch-${BUILD_ID}-${FORGEJO_BRANCH}"
-            if [[ "${FORGEJO_BRANCH}" == "master" && "${BUILD_ID}" == "master" ]]; then
-              CANCEL_IN_PROGRESS=false
-            else
-              CANCEL_IN_PROGRESS=true
-            fi
-          fi
-          echo "group_key=$GROUP_KEY" >> "$GITHUB_OUTPUT"
-          echo "cancel_in_progress=$CANCEL_IN_PROGRESS" >> "$GITHUB_OUTPUT"
-          echo "Concurrency group: $GROUP_KEY, Cancel in progress: $CANCEL_IN_PROGRESS"
-
   build:
     name: Build
-    needs: [concurrency-check]
     concurrency:
-      group: ${{ needs.concurrency-check.outputs.concurrency_group }}
-      cancel-in-progress: ${{ fromJSON(needs.concurrency-check.outputs.cancel_in_progress) }}
+      group: tag-build
+      cancel-in-progress: true
     uses: ./.github/workflows/build.yml
     with:
       build-type: 'Release'
@@ -61,12 +31,12 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5.0.0
 
       - name: Load payload environment
         shell: bash
@@ -99,7 +69,7 @@ jobs:
           mkdir -p whatsnew
           echo "See the changelog here: https://github.com/eden-emulator/Releases/releases/tag/${{ env.FORGEJO_REF }}" > whatsnew/whatsnew-en-US
 
-      # - uses: r0adkll/upload-google-play@v1
+      # - uses: r0adkll/upload-google-play@v1.1.3
       #   with:
       #     serviceAccountJsonPlainText: ${{ secrets.PLAY_CREDENTIALS }}
       #     packageName: dev.eden.eden_emulator
@@ -109,6 +79,7 @@ jobs:
       #     releaseName: ${{ env.FORGEJO_REF }}
 
       - name: Release
+        id: release
         uses: softprops/action-gh-release@v2.2.2
         with:
           name: "Eden ${{ env.FORGEJO_REF }}"
@@ -123,3 +94,14 @@ jobs:
           make_latest: true
           files: |
             artifacts/*
+
+      - name: Add release URL to summary
+        run: |
+          {
+            echo "## Release Summary"
+            echo ""
+            echo "- View Release on GitHub: [${{ env.FORGEJO_REF }}](${{ steps.release.outputs.url }})"
+            echo ""
+          } > RELEASE_GITHUB_SUMMARY.md
+          cat "$GITHUB_SUMMARY" > OLD_GITHUB_SUMMARY.md
+          cat RELEASE_GITHUB_SUMMARY.md OLD_GITHUB_SUMMARY.md > "$GITHUB_SUMMARY"
