@@ -11,6 +11,7 @@ touch "$FORGEJO_LENV"
 
 parse_payload() {
 	DEFAULT_JSON="default.json"
+	RELEASE_JSON="release.json"
 	PAYLOAD_JSON="payload.json"
 
 	if [ ! -f "$PAYLOAD_JSON" ]; then
@@ -24,6 +25,25 @@ parse_payload() {
 		echo "You should set: 'host', 'repository', 'clone_url', and 'branch' on $DEFAULT_JSON"
 		exit 1
 	fi
+
+	# release.json defines targets for upload releases
+	if [ ! -f "$RELEASE_JSON" ]; then
+		echo "Warning: $RELEASE_JSON not found!"
+		echo
+		echo "You should set: 'build-id', 'host' and 'repository' on $RELEASE_JSON"
+		echo "Skipping releases..."
+	else
+		RELEASE_MASTER_HOST=$(jq -r --arg id "master" '.[] | select(.["build-id"] == $id) | .host' release.json)
+		RELEASE_MASTER_REPO=$(jq -r --arg id "master" '.[] | select(.["build-id"] == $id) | .repository' release.json)
+		{
+			echo "RELEASE_MASTER_HOST=$RELEASE_MASTER_HOST"
+			echo "RELEASE_MASTER_REPO=$RELEASE_MASTER_REPO"
+		} >> "$FORGEJO_LENV"
+	fi
+
+	# Forcefully set PGO target if not found
+	RELEASE_PGO_HOST=$(jq -r --arg id "pgo" '( .[] | select(.["build-id"] == $id) | .host ) // "github.com"' release.json)
+	RELEASE_PGO_REPO=$(jq -r --arg id "pgo" '( .[] | select(.["build-id"] == $id) | .repository ) // "Eden-CI/PGO"' release.json)
 
 	# Payloads do not define host
 	# This is just for verbosity
@@ -59,6 +79,7 @@ parse_payload() {
 		echo "Trying again..."
 	done
 
+	# Export those variables to be used by field.py
 	export FORGEJO_HOST
 	export FORGEJO_BRANCH
 	export FORGEJO_REPO
@@ -84,10 +105,27 @@ parse_payload() {
 			echo "FORGEJO_PR_URL=$FORGEJO_PR_URL"
 			echo "FORGEJO_PR_TITLE=$FORGEJO_PR_TITLE"
 		} >> "$FORGEJO_LENV"
+
+		# Pull Request is dependent of Master for comparassion
+		if [ ! -z "$RELEASE_MASTER_REPO" ]; then
+			RELEASE_PR_HOST=$(jq -r --arg id "pull_request" '.[] | select(.["build-id"] == $id) | .host' release.json)
+			RELEASE_PR_REPO=$(jq -r --arg id "pull_request" '.[] | select(.["build-id"] == $id) | .repository' release.json)
+			{
+				echo "RELEASE_PR_HOST=$RELEASE_PR_HOST"
+				echo "RELEASE_PR_REPO=$RELEASE_PR_REPO"
+			} >> "$FORGEJO_LENV"
+		fi
 		;;
 	tag)
 		FORGEJO_REF=$(jq -r '.tag' $PAYLOAD_JSON)
 		FORGEJO_BRANCH=stable
+
+		RELEASE_TAG_HOST=$(jq -r --arg id "tag" '.[] | select(.["build-id"] == $id) | .host' release.json)
+		RELEASE_TAG_REPO=$(jq -r --arg id "tag" '.[] | select(.["build-id"] == $id) | .repository' release.json)
+		{
+			echo "RELEASE_TAG_HOST=$RELEASE_TAG_HOST"
+			echo "RELEASE_TAG_REPO=$RELEASE_TAG_REPO"
+		} >> "$FORGEJO_LENV"
 		;;
 	push | test)
 		FORGEJO_BRANCH=$(jq -r ".[$FALLBACK_IDX].branch" $DEFAULT_JSON)
@@ -106,44 +144,59 @@ parse_payload() {
 		echo "FORGEJO_REF=$FORGEJO_REF"
 		echo "FORGEJO_BRANCH=$FORGEJO_BRANCH"
 		echo "FORGEJO_CLONE_URL=$FORGEJO_CLONE_URL"
+		echo "RELEASE_PGO_HOST=$RELEASE_PGO_HOST"
+		echo "RELEASE_PGO_REPO=$RELEASE_PGO_REPO"
 	} >> "$FORGEJO_LENV"
 }
 
 # TODO: cleanup, cat-eof?
 generate_summary() {
-	echo "## Job Summary" >> "$GITHUB_STEP_SUMMARY"
-	echo "- Triggered by: $1" >> "$GITHUB_STEP_SUMMARY"
-	echo "- Commit: [\`$FORGEJO_REF\`](https://$FORGEJO_HOST/$FORGEJO_REPO/commit/$FORGEJO_REF)" >> "$GITHUB_STEP_SUMMARY"
-	echo >> "$GITHUB_STEP_SUMMARY"
+	{
+	echo "## Job Summary"
+	echo "- Triggered by: $1"
+	echo "- Commit: [\`$FORGEJO_REF\`](https://$FORGEJO_HOST/$FORGEJO_REPO/commit/$FORGEJO_REF)"
+	echo
+	} >> "$GITHUB_STEP_SUMMARY"
 
 	if [ "$FORGEJO_MIRROR" = true ]; then
-		echo "## Using mirror:" >> "$GITHUB_STEP_SUMMARY"
-		echo "- Mirror URL: [\`$FORGEJO_HOST/$FORGEJO_REPO\`]($FORGEJO_CLONE_URL)" >> "$GITHUB_STEP_SUMMARY"
-		echo >> "$GITHUB_STEP_SUMMARY"
+		{
+		echo "## Using mirror:"
+		echo "- Mirror URL: [\`$FORGEJO_HOST/$FORGEJO_REPO\`]($FORGEJO_CLONE_URL)"
+		echo
+		} >> "$GITHUB_STEP_SUMMARY"
 	fi
 
 	case "$1" in
 	master)
-		echo "## Master Build" >> "$GITHUB_STEP_SUMMARY"
-		echo "- Full changelog: [\`$FORGEJO_BEFORE...$FORGEJO_REF\`](https://$FORGEJO_HOST/$FORGEJO_REPO/compare/$FORGEJO_BEFORE...$FORGEJO_REF)" >> "$GITHUB_STEP_SUMMARY"
+		{
+		echo "## Master Build"
+		echo "- Full changelog: [\`$FORGEJO_BEFORE...$FORGEJO_REF\`](https://$FORGEJO_HOST/$FORGEJO_REPO/compare/$FORGEJO_BEFORE...$FORGEJO_REF)"
+		} >> "$GITHUB_STEP_SUMMARY"
+
 		;;
 	pull_request)
-		echo "## Pull Request Summary" >> "$GITHUB_STEP_SUMMARY"
-		echo "- Pull Request: #[${FORGEJO_PR_NUMBER}]($FORGEJO_PR_URL)" >> "$GITHUB_STEP_SUMMARY"
-		echo "- Merge Base Commit: [\`$FORGEJO_PR_MERGE_BASE\`](https://$FORGEJO_HOST/$FORGEJO_REPO/commit/$FORGEJO_PR_MERGE_BASE)" >> "$GITHUB_STEP_SUMMARY"
-		echo >> "$GITHUB_STEP_SUMMARY"
-		echo "## Pull Request Changelog Summary" >> "$GITHUB_STEP_SUMMARY"
-		echo "$FORGEJO_PR_TITLE" >> "$GITHUB_STEP_SUMMARY"
-		echo "" >> "$GITHUB_STEP_SUMMARY"
+		{
+		echo "## Pull Request Summary"
+		echo "- Pull Request: #[${FORGEJO_PR_NUMBER}]($FORGEJO_PR_URL)"
+		echo "- Merge Base Commit: [\`$FORGEJO_PR_MERGE_BASE\`](https://$FORGEJO_HOST/$FORGEJO_REPO/commit/$FORGEJO_PR_MERGE_BASE)"
+		echo
+		echo "## Pull Request Changelog Summary"
+		echo "$FORGEJO_PR_TITLE"
+		echo
+		} >> "$GITHUB_STEP_SUMMARY"
 		.ci/common/field.py field="body" default_msg="No changelog provided" pull_request_number="$FORGEJO_PR_NUMBER" >> "$GITHUB_STEP_SUMMARY"
 		;;
 	push | test)
-		echo "## Continuous Integration Test Build" >> "$GITHUB_STEP_SUMMARY"
-		echo "- This build was triggered for testing purposes." >> "$GITHUB_STEP_SUMMARY"
+		{
+		echo "## Continuous Integration Test Build"
+		echo "- This build was triggered for testing purposes."
+		} >> "$GITHUB_STEP_SUMMARY"
 		;;
 	*)
-		echo "## Unknown Build Type" >> "$GITHUB_STEP_SUMMARY"
-		echo "- Build type '$1' is not recognized." >> "$GITHUB_STEP_SUMMARY"
+		{
+		echo "## Unknown Build Type"
+		echo "- Build type '$1' is not recognized."
+		} >> "$GITHUB_STEP_SUMMARY"
 		;;
 	esac
 

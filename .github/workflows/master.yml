@@ -6,6 +6,7 @@ on:
 
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}
+  FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
 
 jobs:
   build:
@@ -26,7 +27,8 @@ jobs:
       security-events: write
       contents: write
       discussions: write
-
+    env:
+      GH_TOKEN: "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5.0.0
@@ -44,7 +46,6 @@ jobs:
 
       - name: Set environment variables
         run: |
-          echo "REPO=Eden-CI/Master" >> $GITHUB_ENV
           echo "DEVEL=true" >> $GITHUB_ENV
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
 
@@ -53,29 +54,22 @@ jobs:
           export ID=${FORGEJO_REF}
           ./pack.sh
 
-      - name: Delete Previous Release
-        run: |
-          gh release delete "continuous" --repo "$REPO" --cleanup-tag  -y
-          sleep 5
-        env:
-          GH_TOKEN: "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
-        continue-on-error: true
-
       - name: Generate changelog
         run: ./.ci/changelog/generate.sh master > changelog.md
 
       - name: Release
+        if: ${{ env.GH_TOKEN }}
         id: release
         uses: softprops/action-gh-release@v2.2.2
         with:
           name: "Eden Master - ${{ env.FORGEJO_REF }}"
           tag_name: v${{ env.TIMESTAMP }}.${{ env.FORGEJO_REF }}
-          repository: ${{ env.REPO }}
+          repository: ${{ env.RELEASE_MASTER_REPO }}
           body_path: ./changelog.md
           prerelease: false
           draft: false
           generate_release_notes: false
-          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          token: ${{ env.GH_TOKEN }}
           fail_on_unmatched_files: false
           make_latest: true
           files: |
@@ -88,9 +82,7 @@ jobs:
             echo ""
             echo "- View Release on GitHub: [Master](${{ steps.release.outputs.url }})"
             echo ""
-          } > RELEASE_GITHUB_STEP_SUMMARY.md
-          cat "$GITHUB_STEP_SUMMARY" > OLD_GITHUB_STEP_SUMMARY.md
-          cat RELEASE_GITHUB_STEP_SUMMARY.md OLD_GITHUB_STEP_SUMMARY.md > "$GITHUB_STEP_SUMMARY"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Send release URL to status
         run: |
