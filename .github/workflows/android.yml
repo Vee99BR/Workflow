@@ -133,7 +133,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: android-${{ matrix.target }}
+          name: android-${{ matrix.target.flavor }}
           path: artifacts/*.apk
 
       - name: Upload AAB
