@@ -4,9 +4,6 @@ on:
   pull_request:
     branches:
       - '*'
-  push:
-    branches-ignore:
-      - 'master'
   workflow_dispatch:
 
 env:
@@ -17,7 +14,7 @@ jobs:
   build:
     name: Build
     concurrency:
-      group: test-build-${{ github.ref_name }}
+      group: test-build
       cancel-in-progress: true
     uses: ./.github/workflows/build.yml
     with:
