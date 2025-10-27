@@ -15,7 +15,6 @@ jobs:
       cancel-in-progress: true
     uses: ./.github/workflows/build.yml
     with:
-      build-type: 'Release'
       devel: false
       build-id: 'tag'
     secrets: inherit
