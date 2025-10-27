@@ -26,6 +26,23 @@ env:
   DEVEL: ${{ inputs.devel }}
 
 jobs:
+  and-matrix:
+    name: "Generate Android targets"
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.set.outputs.targets }}
+    steps:
+      - id: set
+        run: |
+          if [ "${{ inputs.build-id }}" = "tag" ]; then
+            TARGETS="[optimized, legacy, standard]"
+          else
+            TARGETS="[standard]"
+          fi
+
+          echo $TARGETS
+          echo "targets=${TARGETS}" >> $GITHUB_OUTPUT
+
   check-android-secrets:
     name: Check Android Secrets
     runs-on: ubuntu-latest
@@ -54,8 +71,16 @@ jobs:
 
   android:
     name: "Android"
-    needs: [check-android-secrets]
+    needs: [check-android-secrets, and-matrix]
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.and-matrix.outputs.targets) }}
+
+    env:
+      TARGET: "${{ matrix.target }}"
 
     if: |
       needs.check-android-secrets.outputs.CI_SECRETS_STATUS == 'true' ||
@@ -104,11 +129,11 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: android
+          name: android-${{ matrix.target }}
           path: artifacts/*.apk
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: android-aab
+          name: android-aab-${{ matrix.target }}
           path: artifacts/*.aab

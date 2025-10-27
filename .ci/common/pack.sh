@@ -33,7 +33,14 @@ for arch in $ARCHES; do
 	fi
 done
 
-cp android/*.apk "artifacts/Eden-Android-${ID}.apk"
+FLAVORS=standard
+if [ "$DEVEL" = "false" ]; then
+	FLAVORS="standard legacy optimized"
+fi
+
+for flavor in $FLAVORS; do
+	cp android-"$flavor"/*.apk "artifacts/Eden-Android-${ID}-${flavor}.apk"
+done
 
 for arch in amd64 arm64; do
 	for compiler in clang msvc; do

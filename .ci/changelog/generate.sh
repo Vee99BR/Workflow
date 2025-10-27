@@ -91,11 +91,11 @@ win() {
 
 android() {
 	TYPE="$1"
-	SUFFIX="$2"
+	FLAVOR="$2"
 	DESCRIPTION="$3"
 
 	echo -n "| "
-	echo -n "[Android $TYPE](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Android-${REF}${SUFFIX}.apk) |"
+	echo -n "[Android $TYPE](${BASE_DOWNLOAD_URL}/${TAG}/Eden-Android-${REF}-${FLAVOR}.apk) |"
 	echo -n "$DESCRIPTION |"
 	echo
 }
@@ -235,10 +235,10 @@ echo "### Android"
 echo
 echo "| Build  | Description |"
 echo "|--------|-------------|"
-android Standard "" "Single APK for all supported Android devices (most users should use this)"
+android Standard "standard" "Single APK for all supported Android devices (most users should use this)"
 if [ "$DEVEL" != true ]; then
-	android Optimized "-Optimized" "For any Android device that has Frame Generation or any other per-device feature"
-	android Legacy "-Legacy" "For A6xx. Fixes any games that work on newer devices but don't on Adreno 6xx"
+	android Optimized "optimized" "For any Android device that has Frame Generation or any other per-device feature"
+	android Legacy "legacy" "For Adreno A6xx and other older GPUs"
 fi
 echo
 

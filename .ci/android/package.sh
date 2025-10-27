@@ -8,8 +8,13 @@ GITREV="$(git show -s --format='%h')"
 ARTIFACTS_DIR="$PWD/artifacts"
 mkdir -p "${ARTIFACTS_DIR}/"
 
+case "$TARGET" in
+	legacy) BUILD_FLAVOR=legacy ;;
+	optimized) BUILD_FLAVOR=genshinSpoof ;;
+	standard|*) BUILD_FLAVOR=mainline ;;
+esac
+
 REV_NAME="eden-android-${GITDATE}-${GITREV}"
-BUILD_FLAVOR="mainline"
 BUILD_TYPE_LOWER="release"
 BUILD_TYPE_UPPER="Release"
 
