@@ -34,10 +34,14 @@ jobs:
     steps:
       - id: set
         run: |
+          OPT='{"flavor": "optimized"}'
+          LEG='{"flavor": "legacy"}'
+          STD='{"flavor": "standard"}'
+
           if [ "${{ inputs.build-id }}" = "tag" ]; then
-            TARGETS="[optimized, legacy, standard]"
+            TARGETS="[$OPT, $LEG, $STD]"
           else
-            TARGETS="[standard]"
+            TARGETS="[$STD]"
           fi
 
           echo $TARGETS
@@ -80,7 +84,7 @@ jobs:
         target: ${{ fromJson(needs.and-matrix.outputs.targets) }}
 
     env:
-      TARGET: "${{ matrix.target }}"
+      TARGET: "${{ matrix.target.flavor }}"
 
     if: |
       needs.check-android-secrets.outputs.CI_SECRETS_STATUS == 'true' ||
