@@ -33,7 +33,7 @@ case "$TARGET" in
 	standard|*) FLAVOR=Mainline ;;
 esac
 
-./gradlew bundle${FLAVOR}Release \
+./gradlew assemble${FLAVOR}Release \
     -Dorg.gradle.caching="${CCACHE}" \
     -Dorg.gradle.parallel="${CCACHE}" \
     -Dorg.gradle.workers.max="${NUM_JOBS}" \

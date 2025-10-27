@@ -21,7 +21,7 @@ BUILD_TYPE_UPPER="Release"
 cp src/android/app/build/outputs/apk/"${BUILD_FLAVOR}/${BUILD_TYPE_LOWER}/app-${BUILD_FLAVOR}-${BUILD_TYPE_LOWER}.apk" \
 	"${ARTIFACTS_DIR}/${REV_NAME}.apk" || echo "APK not found"
 
-cp src/android/app/build/outputs/bundle/"${BUILD_FLAVOR}${BUILD_TYPE_UPPER}"/"app-${BUILD_FLAVOR}-${BUILD_TYPE_LOWER}.aab" \
+cp src/android/app/build/outputs/bundle/"${BUILD_FLAVOR}${BUILD_TYPE_UPPER}/app-${BUILD_FLAVOR}-${BUILD_TYPE_LOWER}.aab" \
 	"${ARTIFACTS_DIR}/${REV_NAME}.aab" || echo "AAB not found"
 
 ls -la "${ARTIFACTS_DIR}/"
