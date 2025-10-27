@@ -61,7 +61,6 @@ linux_builds() {
 	if [ "$DEVEL" != "true" ]; then
 		linux legacy "amd64 (legacy)" "For CPUs older than 2013 or so"
 		linux rog-ally "ROG Ally X" "For ROG Ally X and other >= Zen 4 AMD CPUs"
-		[ "$DISABLE_ARM" != "true" ] && linux armv9 "armv9-a" "For ARM CPUs made in late 2021 or later"
 	fi
 
 }

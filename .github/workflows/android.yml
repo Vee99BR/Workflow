@@ -139,5 +139,5 @@ jobs:
       - name: Upload AAB
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: android-aab-${{ matrix.target }}
+          name: android-aab-${{ matrix.target.flavor }}
           path: artifacts/*.aab

@@ -11,7 +11,6 @@ ARCHES="amd64 steamdeck"
 COMPILERS="gcc"
 if [ "$DEVEL" = "false" ]; then
 	ARCHES="$ARCHES legacy rog-ally"
-	[ "$DISABLE_ARM" != "true" ] && ARCHES="$ARCHES armv9"
 	COMPILERS="$COMPILERS clang"
 fi
 
