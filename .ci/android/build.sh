@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 # SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -33,12 +33,14 @@ case "$TARGET" in
 	standard|*) FLAVOR=Mainline ;;
 esac
 
+echo "-- building APK"
 ./gradlew assemble${FLAVOR}Release \
     -Dorg.gradle.caching="${CCACHE}" \
     -Dorg.gradle.parallel="${CCACHE}" \
     -Dorg.gradle.workers.max="${NUM_JOBS}" \
     -PYUZU_ANDROID_ARGS="${ANDROID_CMAKE_ARGS[*]}"
 
+echo "-- bundling AAB"
 ./gradlew bundle${FLAVOR}Release \
     -Dorg.gradle.caching="${CCACHE}" \
     -Dorg.gradle.workers.max="${NUM_JOBS}" \

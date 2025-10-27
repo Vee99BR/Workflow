@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 # SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -18,10 +18,12 @@ REV_NAME="eden-android-${GITDATE}-${GITREV}"
 BUILD_TYPE_LOWER="release"
 BUILD_TYPE_UPPER="Release"
 
+find src/android/app/build/outputs -type f -name "app*.a*"
+
 cp src/android/app/build/outputs/apk/"${BUILD_FLAVOR}/${BUILD_TYPE_LOWER}/app-${BUILD_FLAVOR}-${BUILD_TYPE_LOWER}.apk" \
-	"${ARTIFACTS_DIR}/${REV_NAME}.apk" || echo "APK not found"
+	"${ARTIFACTS_DIR}/${REV_NAME}.apk"
 
 cp src/android/app/build/outputs/bundle/"${BUILD_FLAVOR}${BUILD_TYPE_UPPER}/app-${BUILD_FLAVOR}-${BUILD_TYPE_LOWER}.aab" \
-	"${ARTIFACTS_DIR}/${REV_NAME}.aab" || echo "AAB not found"
+	"${ARTIFACTS_DIR}/${REV_NAME}.aab"
 
 ls -la "${ARTIFACTS_DIR}/"
