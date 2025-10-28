@@ -22,7 +22,7 @@ EOF
 
 pull_request() {
 cat << EOF
-## Pull Request"
+## Pull Request
 This is a build for pull request #[${FORGEJO_PR_NUMBER}]($FORGEJO_PR_URL). This commit's merge base with master is [\`$FORGEJO_PR_MERGE_BASE\`](https://$FORGEJO_HOST/$FORGEJO_REPO/commit/$FORGEJO_PR_MERGE_BASE)
 
 ## Changelog
@@ -30,7 +30,7 @@ $FORGEJO_PR_TITLE
 
 EOF
 
-	.ci/common/field.py field="body" default_msg="No changelog provided" pull_request_number="$FORGEJO_PR_NUMBER"
+	.ci/common/field.py field=body default_msg="No changelog provided" pull_request_number="$FORGEJO_PR_NUMBER"
 }
 
 push() {
