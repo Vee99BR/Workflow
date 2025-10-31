@@ -24,7 +24,7 @@ makedepends=('autoconf' 'glslang-tools' 'cmake' 'git' 'gcc' 'g++' 'ninja-build' 
 	'libtool' 'nasm' 'pkg-config' 'nlohmann-json3-dev' 'spirv-headers')
 
 _newbdeps=('libfrozen-dev' 'vulkan-utility-libraries-dev' 'libvulkan-memory-allocator-dev')
-_newrdeps=('libasound2t64' 'libdiscord-rpc-dev' 'libboost-context-dev' 'libboost-fiber-dev')
+_newrdeps=('libasound2t64' 'libboost-context-dev' 'libboost-fiber-dev')
 
 noble_makedepends=("${makedepends[@]}" "${_newbdeps[@]}")
 noble_depends=("${depends[@]}" "${_newrdeps[@]}")
