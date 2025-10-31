@@ -53,7 +53,7 @@ jobs:
       - name: Load payload environment
         shell: bash
         run: |
-          . ./.ci/common/load-env.sh --load-payload-env
+          . ./.ci/fj/load-env.sh
 
       # for some amazing reason you can't pass env vars to reusable workflows
       - name: Setup Outputs

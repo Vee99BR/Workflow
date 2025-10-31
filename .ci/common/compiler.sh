@@ -6,7 +6,7 @@
 # compiler handling
 if [ "$COMPILER" = "clang" ]; then
 	case "$PLATFORM" in
-		(linux|freebsd)
+		(linux|freebsd|msys)
 			CLANG=clang
 			CLANGPP=clang++
 			;;

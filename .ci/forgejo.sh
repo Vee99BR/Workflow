@@ -200,19 +200,12 @@ case "$1" in
 --clone)
 	clone_repository "$2"
 	;;
---load-payload-env)
-	load_payload_env
-	;;
 *)
 	cat << EOF
-Usage: $0 [--parse <type> | --clone <type> | --load-payload-env]
+Usage: $0 [--parse <type> | --clone <type>]
 Supported types: master | pull_request | tag | push | test
 
 Commands:
-    --load-payload-env: Load the payload environment from forgejo.env.
-
-        Set FORGEJO_LENV to use a custom environment file.
-
     --parse: Parses an existing payload from payload.json, and creates
              a Forgejo environment file.
 

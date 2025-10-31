@@ -85,7 +85,7 @@ jobs:
       - name: Load payload environment
         shell: bash
         run: |
-          . ./.ci/common/load-env.sh --load-payload-env
+          . ./.ci/fj/load-env.sh
 
       - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1.13.0

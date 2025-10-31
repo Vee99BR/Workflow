@@ -5,8 +5,8 @@
 
 SDL_FLAGS=(-DYUZU_USE_BUNDLED_SDL2=ON)
 
-# only need targets if on Linux or clang-cl
-if [ "$PLATFORM" = "linux" ] || [ "$COMPILER" = "clang" ]; then
+# only clang and gcc support this
+if [ ! -z "$SUPPORTS_TARGETS" ]; then
 	case "$TARGET" in
 		amd64)
 			echo "Making amd64-v3 optimized build of Eden"
