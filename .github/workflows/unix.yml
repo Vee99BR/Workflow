@@ -81,9 +81,6 @@ jobs:
             echo "- Install dependencies"
             bash ./.ci/freebsd/deps.sh
 
-            echo "- Load Payload env"
-            bash -ex . ./.ci/fj/load-env.sh
-
             echo "- Configure"
             bash -ex .ci/common/configure.sh -DCCACHE_PATH=${SCCACHE_PATH}
 
