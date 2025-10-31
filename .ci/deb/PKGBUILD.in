@@ -1,8 +1,6 @@
 # Maintainer: crueter <crueter at crueter dot x y z>
 
 pkgname=eden
-_tag=%TAG%
-_ver=%REF%
 pkgver=%PKGVER%
 pkgrel=1
 pkgdesc="High-performance Nintendo Switch emulator forked from yuzu."

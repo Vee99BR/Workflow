@@ -28,17 +28,14 @@ DEST=PKGBUILD
 
 TAG=$(cat "$GITHUB_WORKSPACE"/GIT-TAG | sed 's/.git//' | sed 's/v//' | sed 's/[-_]/./g' | tr -d '\n')
 if [ -f "$GITHUB_WORKSPACE"/GIT-RELEASE ]; then
-	REF=$(cat "$GITHUB_WORKSPACE"/GIT-TAG | cut -d'v' -f2 | sed 's/[-_]/./g' | tr -d '\n')
-	PKGVER="$REF"
+	PKGVER="$TAG"
 else
 	REF=$(cat "$GITHUB_WORKSPACE"/GIT-COMMIT)
 	PKGVER="$TAG.$REF"
 fi
 
-sed "s/%TAG%/$TAG/"       $SRC    > $DEST.1
-sed "s/%REF%/$REF/"       $DEST.1 > $DEST.2
-sed "s/%PKGVER%/$PKGVER/" $DEST.2 > $DEST.3
-sed "s/%ARCH%/$ARCH/"     $DEST.3 > $DEST
+sed "s/%PKGVER%/$PKGVER/" $SRC    > $DEST.1
+sed "s/%ARCH%/$ARCH/"     $DEST.1 > $DEST
 
 rm $DEST.*
 
