@@ -76,7 +76,7 @@ jobs:
               shells/bash
           run: |
             export SCCACHE_PATH=$(which sccache)
-            chmod +x ./.ci/freebsd/* ./.ci/fj/*
+            chmod +x ./.ci/freebsd/*
 
             echo "- Install dependencies"
             bash ./.ci/freebsd/deps.sh
