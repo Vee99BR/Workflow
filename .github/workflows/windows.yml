@@ -98,7 +98,7 @@ jobs:
         run: |
           choco upgrade llvm --no-progress
           echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH
-          C:/Program Files/LLVM/bin/clang-cl --version
+          "C:/Program Files/LLVM/bin/clang-cl" --version
 
       - name: Install Vulkan SDK
         shell: powershell
