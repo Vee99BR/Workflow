@@ -101,12 +101,19 @@ if [ "$STEAMDECK" = "true" ]; then
 	)
 fi
 
+# MinGW uses external SDL2
+if [ "$PLATFORM" = "msys" ]; then
+	SDL_FLAGS=(
+		-DYUZU_USE_EXTERNAL_SDL2=ON
+	)
+fi
+
 # Package targets use system sdl2
 if [ "$PACKAGE" = "true" ]; then
 	SDL_FLAGS=(-DYUZU_USE_BUNDLED_SDL2=OFF)
 fi
 
-[ -n "$ARCH_FLAGS" ] && ARCH_CMAKE=(-DCMAKE_C_FLAGS="${ARCH_FLAGS}" -DCMAKE_CXX_FLAGS="${ARCH_FLAGS}")
+[ -n "$ARCH_FLAGS" ] && ARCH_CMAKE+=(-DCMAKE_C_FLAGS="${ARCH_FLAGS}" -DCMAKE_CXX_FLAGS="${ARCH_FLAGS}")
 
 export ARCH_CMAKE
 export SDL_FLAGS

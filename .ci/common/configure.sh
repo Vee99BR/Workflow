@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
 # SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -61,7 +61,7 @@ COMMON_FLAGS=(
 	-DYUZU_ENABLE_LTO="${LTO:-ON}"
 
 	# many distros do not package sirit, so let's bundle it anyways
-	-DYUZU_USE_BUNDLED_SIRIT=ON
+	-DYUZU_USE_BUNDLED_SIRIT="${BUNDLED:-ON}"
 
 	# Bundled stuff (only if not building for a pkg)
 	-DYUZU_USE_BUNDLED_FFMPEG="${FFMPEG:-ON}"
@@ -91,5 +91,7 @@ CMAKE_FLAGS=(
 	"${PLATFORM_FLAGS[@]}"
 	"${EXTRA_ARGS[@]}"
 )
+
+echo "-- Configure flags: ${CMAKE_FLAGS[*]}"
 
 cmake -S . -B "${BUILDDIR}" -G Ninja "${CMAKE_FLAGS[@]}"

@@ -1,4 +1,4 @@
-name: "Windows"
+name: "MSYS2"
 
 on:
   workflow_call:
@@ -24,8 +24,8 @@ env:
   DEVEL: ${{ inputs.devel }}
 
 jobs:
-  win-matrix:
-    name: "Generate Windows compilers"
+  msys-matrix:
+    name: "Generate MSYS compilers"
     runs-on: ubuntu-latest
     outputs:
       compiler: ${{ steps.set.outputs.compiler }}
@@ -34,20 +34,22 @@ jobs:
         run: |
           PGO='{"program": "clang", "target": "pgo"}'
           CLANG='{"program": "clang", "target": "standard"}'
-          MSVC='{"program": "msvc", "target": "standard"}'
+          GCC='{"program": "gcc", "target": "standard"}'
 
           if [ "${{ inputs.build-id }}" = "tag" ]; then
-            COMPILER="[${MSVC},${PGO}]"
+            COMPILER="[${GCC},${PGO}]"
           else
-            COMPILER="[${MSVC}]"
+            COMPILER="[${GCC}]"
           fi
 
           echo $COMPILER
           echo "compiler=${COMPILER}" >> $GITHUB_OUTPUT
 
-  windows:
-    name: "Windows ${{ matrix.os.arch }} ${{ matrix.compiler.program }} ${{ matrix.compiler.target }}"
-    needs: [win-matrix]
+  # TODO: setup
+  # TODO: once arm64 builds work, combine this with windows.yml
+  msys:
+    name: "MSYS2-MinGW64 ${{ matrix.os.arch }} ${{ matrix.compiler.program }} ${{ matrix.compiler.target }}"
+    needs: [msys-matrix]
     runs-on: ${{ matrix.os.runs-on }}
     strategy:
       fail-fast: false
@@ -55,9 +57,13 @@ jobs:
         os:
           - runs-on: windows-latest
             arch: amd64
-          - runs-on: windows-11-arm
-            arch: arm64
-        compiler: ${{ fromJson(needs.win-matrix.outputs.compiler) }}
+            msystem: mingw64
+
+          # TODO: this requires some cross-comp stuff
+          # - runs-on: ubuntu-24.04-arm
+          #   arch: arm64
+
+        compiler: ${{ fromJson(needs.msys-matrix.outputs.compiler) }}
 
     env:
       QT_VERSION: 6.9.1
@@ -73,56 +79,49 @@ jobs:
       - name: Setup
         uses: ./.github/workflows/setup
         with:
-          key: ${{ runner.os }}-${{ matrix.os.arch }}-${{ matrix.compiler.program }}
+          key: MSYS2-${{ matrix.os.msystem }}-${{ matrix.os.arch }}-${{ matrix.compiler.program }}
           version: ${{ inputs.cpm-cache-version }}
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4.3.0
-        with:
-          version: ${{ env.QT_VERSION }}
-          cache: 'true'
 
       - name: Load payload environment
         shell: bash
         run: |
           . ./.ci/fj/load-env.sh
 
-      - name: Set up MSVC
-        uses: ilammy/msvc-dev-cmd@v1.13.0
+      - name: Setup MSYS2
+        id: msys2
+        uses: msys2/setup-msys2@v2
         with:
-          arch: ${{ matrix.os.arch }}
+          msystem: ${{ matrix.os.msystem }}
+          update: true
+          install: >-
+            git make autoconf libtool automake-wrapper patch jq
+            pactoys ninja
+          pacboy: >-
+            qt6-base:p qt6-tools:p qt6-translations:p qt6-svg:p
 
-      - name: Update clang
-        if: matrix.compiler.program == 'clang'
-        shell: bash
-        run: |
-          choco upgrade llvm --no-progress
-          echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH
-          C:/Program Files/LLVM/bin/clang-cl --version
-
-      - name: Install Vulkan SDK
-        shell: powershell
-        run: |
-          ./.ci/windows/install-vulkan-sdk.ps1
+            7zip:p sccache:p cmake:p toolchain:p clang:p python-pip:p
+            openssl:p boost:p fmt:p lz4:p nlohmann-json:p zlib:p zstd:p
+            vulkan-memory-allocator:p vulkan-devel:p glslang:p
+            enet:p opus:p mbedtls:p libusb:p unordered_dense:p
 
       - name: Configure
-        shell: bash
+        shell: msys2 {0}
         run: |
-          git config --global core.autocrlf off
-          dos2unix .patch/boost/*
-          .ci/common/configure.sh -DCCACHE_PATH=${SCCACHE_PATH}
+          .ci/common/configure.sh -DCCACHE_PATH=sccache
 
       - name: Build
-        shell: bash
+        shell: msys2 {0}
         run: cmake --build build
 
       - name: Package
-        shell: bash
+        shell: msys2 {0}
         run: ./.ci/windows/package.sh
+        env:
+          MSYS_TOOLCHAIN: ${{ env.msystem }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: windows-${{ env.ARCH }}
+          name: mingw-${{ env.ARCH }}
           path: artifacts/*
 
