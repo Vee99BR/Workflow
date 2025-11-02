@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 # SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -55,18 +55,16 @@ tagged && COMPILERS="$COMPILERS clang-pgo"
 
 for arch in amd64 arm64; do
 	for compiler in $COMPILERS; do
-		cp "windows-$arch-compiler"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-${compiler}.zip"
+		cp "windows-$arch-$compiler"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-${compiler}.zip"
 	done
 done
 
 ## MinGW ##
-COMPILERS="gcc-standard"
-tagged && COMPILERS="$COMPILERS clang-pgo"
+COMPILERS="amd64-gcc-standard" # arm64-clang-standard"
+tagged && COMPILERS="$COMPILERS amd64-clang-pgo" # arm64-clang-pgo"
 
-for arch in amd64; do
-	for compiler in $COMPILERS; do
-		cp "mingw-$arch-$compiler"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-mingw-${compiler}.zip"
-	done
+for compiler in $COMPILERS; do
+    cp "mingw-$compiler"/*.zip "artifacts/Eden-Windows-${ID}-mingw-${compiler}.zip"
 done
 
 ## Source Pack ##
