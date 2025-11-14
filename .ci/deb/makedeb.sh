@@ -2,16 +2,12 @@
 
 # SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-MANDB=/var/lib/man-db/auto-update
 WORKSPACE="$PWD"
 
 # Use sudo if available, otherwise run directly
 if command -v sudo >/dev/null 2>&1 ; then
 	SUDO=sudo
 fi
-
-[ -f $MANDB ] && $SUDO rm $MANDB
 
 if command -v apt >/dev/null 2>&1 ; then
 	$SUDO apt update
