@@ -26,7 +26,8 @@ SHARUN="https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/refs/h
 
 export ICON="$PWD"/dist/dev.eden_emu.eden.svg
 export DESKTOP="$PWD"/dist/dev.eden_emu.eden.desktop
-export OPTIMIZE_LAUNCH=1
+# currently broken? on aarch64
+# export OPTIMIZE_LAUNCH=1
 export DEPLOY_OPENGL=1
 export DEPLOY_VULKAN=1
 
