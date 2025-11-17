@@ -33,3 +33,12 @@ export DISABLE_MINGW
 export DISABLE_MSVC_ARM
 
 export EXPLAIN_TARGETS
+
+truthy() {
+	LOWER=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+	[ "$LOWER" = "true" ] || [ "$LOWER" = "on" ] || [ "$LOWER" = "1" ] || [ "$LOWER" = "t" ] || [ "$LOWER" = "yes" ] || [ "$LOWER" = "y" ]
+}
+
+falsy() {
+	! truthy "$1"
+}

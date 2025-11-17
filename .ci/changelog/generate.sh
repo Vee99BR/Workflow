@@ -38,15 +38,6 @@ esac
 
 COMPARE_RELEASE_URL="https://$RELEASE_MASTER_HOST/$RELEASE_MASTER_REPO/releases"
 
-truthy() {
-	LOWER=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-	[ "$LOWER" = "true" ] || [ "$LOWER" = "on" ] || [ "$LOWER" = "1" ] || [ "$LOWER" = "t" ] || [ "$LOWER" = "yes" ] || [ "$LOWER" = "y" ]
-}
-
-falsy() {
-	! truthy "$1"
-}
-
 tagged() {
 	falsy "$DEVEL"
 }
