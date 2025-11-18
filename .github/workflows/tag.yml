@@ -29,6 +29,7 @@ jobs:
       discussions: write
     env:
       GH_TOKEN: "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
+      FJ_TOKEN: "${{ secrets.FORGEJO_TOKEN }}"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5.0.0
@@ -105,13 +106,13 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Forgejo Release
-        if: ${{ secrets.FORGEJO_TOKEN }}
+        if: ${{ env.FOJ_TOKEN }}
         id: fjrelease
         run: |
           sed -i 's|github.com/eden-emulator/Releases|git.eden-emu.dev/eden-emu/eden|g' changelog.md
           git clone https://git.crueter.xyz/scripts/fj.git
 
-          alias release='fj/fj.sh -k "${{ secrets.FORGEJO_TOKEN }}" -r "eden-emu/eden" -u "git.eden-emu.dev" release -t "${{ env.FORGEJO_REF }}"'
+          alias release='fj/fj.sh -k "${{ env.FOJ_TOKEN }}" -r "eden-emu/eden" -u "git.eden-emu.dev" release -t "${{ env.FORGEJO_REF }}"'
 
           release create -b changelog.md -n "Eden ${{ env.FORGEJO_REF }}" -d > url
 
