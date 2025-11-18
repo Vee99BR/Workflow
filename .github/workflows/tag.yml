@@ -112,11 +112,11 @@ jobs:
           sed -i 's|github.com/eden-emulator/Releases|git.eden-emu.dev/eden-emu/eden|g' changelog.md
           git clone https://git.crueter.xyz/scripts/fj.git
 
-          alias release='fj/fj.sh -k "${{ env.FJ_TOKEN }}" -r "eden-emu/eden" -u "git.eden-emu.dev" release -t "${{ env.FORGEJO_REF }}"'
+          fj/fj.sh -k "${{ env.FJ_TOKEN }}" -r "eden-emu/eden" -u "git.eden-emu.dev" release -t "${{ env.FORGEJO_REF }}" \
+            create -b changelog.md -n "Eden ${{ env.FORGEJO_REF }}" -d > url
 
-          release create -b changelog.md -n "Eden ${{ env.FORGEJO_REF }}" -d > url
-
-          release upload -g artifacts/*
+          fj/fj.sh -k "${{ env.FJ_TOKEN }}" -r "eden-emu/eden" -u "git.eden-emu.dev" release -t "${{ env.FORGEJO_REF }}" \
+            release upload -g artifacts/*
 
       - name: Add release URL to summary
         run: |
