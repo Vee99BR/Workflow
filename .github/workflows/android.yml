@@ -122,7 +122,7 @@ jobs:
 
       - name: Build
         run: |
-          JAVA_HOME=$JAVA_HOME_17_X64 DEVEL=true ./.ci/android/build.sh -DCCACHE_PATH=${SCCACHE_PATH}
+          JAVA_HOME=$JAVA_HOME_17_X64 ./.ci/android/build.sh -DCCACHE_PATH=${SCCACHE_PATH}
 
       - name: Package
         run: ./.ci/android/package.sh

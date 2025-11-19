@@ -41,7 +41,7 @@ jobs:
           MSVC='{"program": "msvc", "target": "standard"}'
 
           if [ "${{ inputs.devel }}" != "true" ] || [ "${{ inputs.force_pgo }}" = "true" ]; then
-            COMPILER="[${MSVC},${PGO}]"
+            COMPILER="[${MSVC}]"
           else
             COMPILER="[${MSVC}]"
           fi

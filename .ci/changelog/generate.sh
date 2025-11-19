@@ -171,7 +171,6 @@ msys() {
 
 win_matrix() {
 	win_field MSVC msvc-standard
-	opts && tagged && win_field PGO clang-pgo || true
 
 	if falsy "$DISABLE_MINGW"; then
 		msys "MinGW" gcc clang standard "May have additional bugs/glitches"

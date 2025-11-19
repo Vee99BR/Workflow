@@ -64,7 +64,6 @@ fi
 
 ## Windows ##
 COMPILERS="msvc-standard"
-opts && tagged && COMPILERS="$COMPILERS clang-pgo"
 
 ARCHES=amd64
 falsy "$DISABLE_MSVC_ARM" && ARCHES="$ARCHES arm64"
