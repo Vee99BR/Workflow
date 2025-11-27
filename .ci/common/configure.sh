@@ -102,7 +102,7 @@ COMMON_FLAGS=(
 EXTRA_ARGS=("$@")
 
 if [ "$PLATFORM" = macos ]; then
-	EXTRA_ARGS+=(-DMBEDTLS_FORCE_BUNDLED=ON)
+	EXTRA_ARGS+=(-DMbedTLS_FORCE_BUNDLED=ON)
 fi
 
 # aggregate
