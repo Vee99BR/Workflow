@@ -17,7 +17,7 @@ brew install --formula --quiet \
   libtool \
   libusb \
   lz4 \
-  mbedtls \
+  mbedtls@3 \
   molten-vk \
   ninja \
   nlohmann-json \
