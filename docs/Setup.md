@@ -8,6 +8,7 @@ This workflow setup *requires* at least three things:
     - [GitHub](#github)
     - [Forgejo](#forgejo)
   - [Webhook](#webhook)
+  - [Forgejo Release Mirroring](#forgejo-release-mirroring)
 <!-- /TOC -->
 
 ## Repositories
@@ -16,7 +17,7 @@ To start, you must have repositories to store builds. Right now, these MUST be G
 
 You're recommended to create an organization specifically for this workflow, *plus* individual repositories for each type: PR, Master, and Release. In the future, Nightly and Continuous test builds will be separate as well.
 
-Once done, edit the corresponding entries in `.ci/release.json`.
+Once done, edit the corresponding entries in `.ci/release.json`. Additionally, edit `.ci/default.json` to include your Forgejo source code repository and any other mirrors.
 
 ## Tokens
 
@@ -61,3 +62,7 @@ The user of the token must also have access to the target repository or reposito
 ## Webhook
 
 The workflow interacts with Forgejo via a webhook. See [fj2ghook](https://git.crueter.xyz/crueter/fj2ghook) for info on setup and such.
+
+## Forgejo Release Mirroring
+
+If `FORGEJO_TOKEN` is provided properly, tagged releases will be automatically mirrored to your Forgejo repository, with all assets uploaded and your changelog's URLs modified to reflect your Forgejo repository. You may disable this by commenting out the corresponding step in `.github/workflows/tag.yml`.
