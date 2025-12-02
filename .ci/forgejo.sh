@@ -56,7 +56,8 @@ parse_payload() {
 	FORGEJO_CLONE_URL=$(jq -r '.clone_url // empty' $PAYLOAD_JSON)
 	FORGEJO_BRANCH=$(jq -r '.branch // empty' $PAYLOAD_JSON)
 
-	# NB: mirrors do not (generally) work for our purposes unless they magically can mirror everything in 10 seconds
+	# NB: mirrors do not (generally) work for our purposes
+	# unless they magically can mirror everything in 10 seconds
 	FALLBACK_IDX=0
 	if [ -z "$FORGEJO_HOST" ]; then
 		FORGEJO_HOST=$(jq -r ".[$FALLBACK_IDX].host" $DEFAULT_JSON)
