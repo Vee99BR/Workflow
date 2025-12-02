@@ -96,16 +96,16 @@ jobs:
           files: |
             artifacts/*
 
-      - name: Forgejo Release
-        if: ${{ env.FJ_TOKEN }}
-        run: ./.ci/release.sh
-
       - name: Add release URL to summary
         run: |
           {
             echo "## Release Summary"
             echo ""
-            echo "- View Release on Forgejo: [${{ env.FORGEJO_REF }}]($(cat url))"
             echo "- View Release on GitHub: [${{ env.FORGEJO_REF }}](${{ steps.release.outputs.url }})"
-            echo ""
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Forgejo Release
+        if: ${{ env.FJ_TOKEN }}
+        run: |
+          ./.ci/release.sh
+          echo "- View Release on Forgejo: [${{ env.FORGEJO_REF }}]($(cat url))" >> "$GITHUB_STEP_SUMMARY"

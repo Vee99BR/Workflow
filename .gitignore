@@ -13,3 +13,5 @@ forgejo.env
 *.deb
 /src
 /pkg
+
+/.vscode
