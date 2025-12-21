@@ -107,5 +107,5 @@ jobs:
       - name: Forgejo Release
         if: ${{ env.FJ_TOKEN }}
         run: |
-          ./.ci/release.sh
+          ./.ci/fj/release.sh
           echo "- View Release on Forgejo: [${{ env.FORGEJO_REF }}]($(cat url))" >> "$GITHUB_STEP_SUMMARY"
