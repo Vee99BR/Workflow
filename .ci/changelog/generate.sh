@@ -178,7 +178,9 @@ win_matrix() {
 	fi
 }
 
-if truthy EXPLAIN_TARGETS; then
+echo "# Packages"
+
+if truthy "$EXPLAIN_TARGETS"; then
 cat << EOF
 
 ## Targets
@@ -200,7 +202,8 @@ EOF
 fi
 
 cat << EOF
-### Linux
+
+## Linux
 
 Linux packages are distributed via AppImage.
 EOF
@@ -225,7 +228,7 @@ linux_matrix
 
 cat << EOF
 
-### Debian/Ubuntu
+## Debian/Ubuntu
 
 Debian/Ubuntu targets are \`.deb\` files, which can be installed via \`sudo dpkg -i <package>.deb\`.
 
@@ -245,7 +248,7 @@ deb_matrix
 # TODO: setup files
 cat << EOF
 
-### Windows
+## Windows
 
 Windows packages are in-place zip files. Setup files are soon to come.
 Note that arm64 builds are experimental.
@@ -259,7 +262,7 @@ win_matrix
 if falsy "$DISABLE_ANDROID"; then
 	cat << EOF
 
-### Android
+## Android
 
 | Build  | Description |
 |--------|-------------|
@@ -275,7 +278,7 @@ fi
 
 cat << EOF
 
-### macOS
+## macOS
 
 macOS comes in a tarballed app. These builds are currently experimental, and you should expect major graphical glitches and crashes.
 In order to run the app, you *may* need to go to System Settings -> Privacy & Security -> Security -> Allow untrusted app.
@@ -284,7 +287,7 @@ In order to run the app, you *may* need to go to System Settings -> Privacy & Se
 | ---- | ----------- |
 | [macOS](${BASE_DOWNLOAD_URL}/${TAG}/${PROJECT_PRETTYNAME}-macOS-${REF}.tar.gz) | For Apple Silicon (M1, M2, etc)|
 
-### Source
+## Source
 
 Contains all source code, submodules, and CPM cache at the time of release.
 This can be extracted with \`tar xf ${PROJECT_PRETTYNAME}-Source-${REF}.tar.zst\`.
