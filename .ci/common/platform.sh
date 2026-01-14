@@ -21,7 +21,7 @@ else
 	case "$(uname -s)" in
 	Linux*)
 		PLATFORM=linux
-		STANDALONE=OFF
+		STANDALONE=ON
 		FFMPEG=ON
 		OPENSSL=ON
 		SUPPORTS_TARGETS=ON
