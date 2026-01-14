@@ -73,8 +73,7 @@ COMMON_FLAGS=(
 	-DUSE_DISCORD_PRESENCE=ON
 
 	# LTO
-	-DDYNARMIC_ENABLE_LTO="${LTO:-ON}"
-	-DYUZU_ENABLE_LTO="${LTO:-ON}"
+	-DENABLE_LTO="${LTO:-ON}"
 
 	# many distros do not package sirit, so let's bundle it anyways
 	-DYUZU_USE_BUNDLED_SIRIT="${SIRIT:-ON}"
@@ -91,6 +90,9 @@ COMMON_FLAGS=(
 
 	# Static Linking
 	-DYUZU_STATIC_BUILD="${STATIC:-OFF}"
+
+	# Bundled Qt
+	-DYUZU_USE_BUNDLED_QT="${QT:-OFF}"
 
 	# packaging stuff
 	-DCMAKE_INSTALL_PREFIX=/usr
