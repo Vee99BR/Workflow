@@ -1,12 +1,12 @@
 [
   {
-    "host": "git.eden-emu.dev",
-    "repository": "eden-emu/eden",
+    "host": "accord.dravee.dev",
+    "repository": "DraVee/eden",
     "branch": "master"
   },
   {
     "host": "github.com",
-    "repository": "eden-emulator/mirror",
+    "repository": "Vee99BR/eden-mirror",
     "branch": "master"
   }
 ]
