@@ -85,18 +85,6 @@ jobs:
         if: ${{ (inputs.build-id || '') == 'tag' }}
         run: |
           ./.ci/changelog/generate.sh tag > changelog.md
-          mkdir -p whatsnew
-          echo "See the changelog here: https://$RELEASE_TAG_HOST/$RELEASE_TAG_REPO/releases/tag/${{ env.FORGEJO_REF }}" > whatsnew/whatsnew-en-US
-
-      # - uses: r0adkll/upload-google-play@v1.1.3
-      #   if: ${{ (inputs.build-id || '') == 'tag' }}
-      #   with:
-      #     serviceAccountJsonPlainText: ${{ secrets.PLAY_CREDENTIALS }}
-      #     packageName: dev.eden.eden_emulator
-      #     track: ${{ env.TRACK }}
-      #     releaseFiles: android-aab/*.aab
-      #     whatsNewDirectory: whatsnew
-      #     releaseName: ${{ env.FORGEJO_REF }}
 
       - name: Delete Previous Release
         if: ${{ (inputs.build-id || '') == 'pull_request' }}
