@@ -211,4 +211,4 @@ jobs:
         shell: bash
         run: |
           . ./.ci/fj/load-env.sh
-          python3 ./.ci/common/status.py --cancelled ${{ cancelled() }} --failure ${{ failure() }} --success ${{ success() }}
+          python3 ./.ci/common/status.py --cancelled cancelled() --failure failure() --success success()
