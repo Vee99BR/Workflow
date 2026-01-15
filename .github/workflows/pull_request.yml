@@ -21,6 +21,7 @@ jobs:
 
   release:
     name: Pull Request Release
+    needs: [build]
     uses: ./.github/workflows/release.yml
     with:
       build-id: 'pull_request'

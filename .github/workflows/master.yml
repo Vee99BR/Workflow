@@ -18,6 +18,7 @@ jobs:
 
   release:
     name: Master Release
+    needs: [build]
     uses: ./.github/workflows/release.yml
     with:
       build-id: 'master'

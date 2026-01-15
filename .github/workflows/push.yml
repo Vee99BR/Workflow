@@ -22,6 +22,7 @@ jobs:
 
   release:
     name: Push Release
+    needs: [build]
     uses: ./.github/workflows/release.yml
     with:
       build-id: 'push'

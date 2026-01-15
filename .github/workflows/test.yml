@@ -23,6 +23,7 @@ jobs:
 
   release:
     name: Test Release
+    needs: [build]
     uses: ./.github/workflows/release.yml
     with:
       build-id: 'test'

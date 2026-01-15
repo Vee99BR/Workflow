@@ -20,7 +20,6 @@ env:
 jobs:
   release-status:
     name: "Create Release"
-    needs: [build]
     permissions:
       actions: read
       security-events: write
