@@ -36,14 +36,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Send Commit Status to Forgejo
-        if: ${{ inputs.build-id == 'master' || inputs.build-id == 'pull_request' }}
-        shell: bash
-        run: |
-          export FORGEJO_REPO="${{ github.event.client_payload.repository }}"
-          export FORGEJO_REF="${{ github.event.client_payload.ref }}"
-          python ./.ci/common/status.py pending
-
       - name: Parse Forgejo payload
         shell: bash
         run: |
@@ -55,6 +47,12 @@ jobs:
         shell: bash
         run: |
           . ./.ci/fj/load-env.sh
+
+      - name: Send Commit Status to Forgejo
+        if: ${{ (inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request' }}
+        shell: bash
+        run: |
+          python ./.ci/common/status.py pending
 
       # for some amazing reason you can't pass env vars to reusable workflows
       - name: Setup Outputs
@@ -198,42 +196,33 @@ jobs:
       devel: ${{ inputs.devel }}
     secrets: inherit
 
-  status-if-cancelled:
-    name: "Send Cancelled Commit Status to Forgejo"
+  status-to-fj:
+    name: "Send Commit Status to Forgejo"
     needs: [source, deb, linux, windows, android, macos, unix, msys]
-    if: ${{ always() && cancelled() && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
+    if: ${{ always() && (( cancelled() || failure() || success() )) && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.1
-      - name: Load payload env and send status
+      - name: Checkout
+        uses: actions/checkout@v6.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Load payload environment
+        shell: bash
         run: |
-          export FORGEJO_REPO="${{ github.event.client_payload.repository }}"
-          export FORGEJO_REF="${{ github.event.client_payload.ref }}"
+          . ./.ci/fj/load-env.sh
+
+      - name: Send status when canceled
+        if: ${{ cancelled() }}
+        run: |
           python3 ./.ci/common/status.py error
 
-  status-if-failure:
-    name: "Send Failure Commit Status to Forgejo"
-    needs: [source, deb, linux, windows, android, macos, unix, msys]
-    if: ${{ always() && failure() && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6.0.1
-      - name: Load payload env and send status
+      - name: Send status when failed
+        if: ${{ failure() }}
         run: |
-          export FORGEJO_REPO="${{ github.event.client_payload.repository }}"
-          export FORGEJO_REF="${{ github.event.client_payload.ref }}"
           python3 ./.ci/common/status.py failure
 
-  status-if-success:
-    name: "Send Success Commit Status to Forgejo"
-    # TODO: ?ploo this
-    needs: [source, deb, linux, windows, android, macos, unix, msys]
-    if: ${{ always() && success() && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6.0.1
-      - name: Load payload env and send status
+      - name: Send status when success
+        if: ${{ success() }}
         run: |
-          export FORGEJO_REPO="${{ github.event.client_payload.repository }}"
-          export FORGEJO_REF="${{ github.event.client_payload.ref }}"
           python3 ./.ci/common/status.py success
