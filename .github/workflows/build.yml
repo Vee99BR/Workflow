@@ -31,9 +31,9 @@ jobs:
     steps:
       - id: windows-matrix
         run: |
-          PGO='{"program": "clang", "target": "pgo"}'
-          CLANG='{"program": "clang", "target": "standard"}'
-          MSVC='{"program": "msvc", "target": "standard"}'
+          PGO='{  "runs-on": "windows-latest", "arch": "amd64", "program": "clang", "target": "pgo"}'
+          CLANG='{"runs-on": "windows-latest", "arch": "amd64", "program": "clang", "target": "standard"}'
+          MSVC='{ "runs-on": "windows-latest", "arch": "amd64", "program": "msvc",  "target": "standard"}'
 
           if [ "${{ inputs.devel }}" != "true" ] || [ "${{ inputs.force_pgo }}" = "true" ]; then
             COMPILER="[${MSVC}]"
