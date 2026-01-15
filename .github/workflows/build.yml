@@ -52,7 +52,7 @@ jobs:
         if: ${{ (inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request' }}
         shell: bash
         run: |
-          python ./.ci/common/status.py pending
+          python ./.ci/common/status.py --pending true
 
       # for some amazing reason you can't pass env vars to reusable workflows
       - name: Setup Outputs
@@ -207,22 +207,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Load payload environment
+      - name: Load payload environment and send status
         shell: bash
         run: |
           . ./.ci/fj/load-env.sh
-
-      - name: Send status when canceled
-        if: ${{ cancelled() }}
-        run: |
-          python3 ./.ci/common/status.py error
-
-      - name: Send status when failed
-        if: ${{ failure() }}
-        run: |
-          python3 ./.ci/common/status.py failure
-
-      - name: Send status when success
-        if: ${{ success() }}
-        run: |
-          python3 ./.ci/common/status.py success
+          python3 ./.ci/common/status.py --cancelled ${{ cancelled() }} --failure ${{ failure() }} --success ${{ success() }}

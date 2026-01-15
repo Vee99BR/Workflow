@@ -133,7 +133,7 @@ jobs:
       - name: Send release URL to status only for master/pull_request
         if: ${{ env.FJ_TOKEN && (inputs.build-id) == 'master' || (inputs.build-id) == 'pull_request' }}
         run: |
-          python3 ./.ci/common/status.py release ${{ steps.release.outputs.url }}
+          python3 ./.ci/common/status.py --release ${{ steps.release.outputs.url }}
 
       - name: Delete previous pull_request number
         if: ${{ (inputs.build-id) == 'pull_request' }}
