@@ -7,10 +7,6 @@ on:
         description: "build id"
         type: string
         required: true
-      cpm-cache-version:
-        description: "CPM cache version (e.g. v7)"
-        type: string
-        required: true
       devel:
         description: 'Development mode (disables update checker, adds nightly qualifier)'
         type: boolean
@@ -18,8 +14,6 @@ on:
 
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}
-  SCCACHE_GHA_ENABLED: "true"
-  CCACHE: "true"
   FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
   DEVEL: ${{ inputs.devel }}
 
@@ -45,13 +39,14 @@ jobs:
           . ./.ci/fj/load-env.sh
 
       - name: Set environment variables for master/test/pull_request/push
-        if: ${{ (inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'test' || (inputs.build-id || '') == 'pull_request' || (inputs.build-id || '') == 'push' }}
+        if: ${{ (inputs.build-id) != 'tag' }}
+
         run: |
           echo "DEVEL=true" >> $GITHUB_ENV
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
 
       - name: Set environment variables
-        if: ${{ (inputs.build-id || '') == 'tag' }}
+        if: ${{ (inputs.build-id) == 'tag' }}
         run: |
           echo "DEVEL=false" >> $GITHUB_ENV
 
@@ -69,25 +64,79 @@ jobs:
           export ID=${FORGEJO_REF}
           ./.ci/common/pack.sh
 
-      - name: Generate changelog for master/test
-        if: ${{ ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'test') }}
-        run: ./.ci/changelog/generate.sh master > changelog.md
+      - name: Generate changelog
+        run: ./.ci/changelog/generate.sh "${{ inputs.build-id }}" > changelog.md
 
-      - name: Generate changelog for pull_request
-        if: ${{ (inputs.build-id || '') == 'pull_request' }}
-        run: ./.ci/changelog/generate.sh pull_request > changelog.md
-
-      - name: Generate changelog for push
-        if: ${{ (inputs.build-id || '') == 'push' }}
-        run: ./.ci/changelog/generate.sh push > changelog.md
-
-      - name: Generate changelog for tag
-        if: ${{ (inputs.build-id || '') == 'tag' }}
+      - name: Set Actions Release variables
         run: |
-          ./.ci/changelog/generate.sh tag > changelog.md
+          case "${{ inputs.build-id }}" in
+            ('master')
+              printf 'ACTIONS_GH_PRETTYNAME=%s\n' "Master" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_RELEASE_NAME=%s\n' "Eden Master - ${{ env.FORGEJO_REF }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_TAG_NAME=%s\n' "v${{ env.TIMESTAMP }}.${{ env.FORGEJO_REF }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_REPOSITORY=%s\n' "${{ env.RELEASE_MASTER_REPO }}" >> $GITHUB_ENV
+              ;;
+            ('pull_request')
+              printf 'ACTIONS_GH_PRETTYNAME=%s\n' "#${{ env.FORGEJO_PR_NUMBER }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_RELEASE_NAME=%s\n' "${{ env.FORGEJO_PR_TITLE }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_TAG_NAME=%s\n' "${{ env.FORGEJO_PR_NUMBER }}-${{ env.FORGEJO_REF }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_REPOSITORY=%s\n' "${{ env.RELEASE_PR_REPO }}" >> $GITHUB_ENV
+              ;;
+            ('tag')
+              printf 'ACTIONS_GH_PRETTYNAME=%s\n' "${{ env.FORGEJO_REF }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_RELEASE_NAME=%s\n' "Eden ${{ env.FORGEJO_REF }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_TAG_NAME=%s\n' "${{ env.FORGEJO_REF }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_REPOSITORY=%s\n' "${{ env.RELEASE_TAG_REPO }}" >> $GITHUB_ENV
+              ;;
+            ('push')
+              printf 'ACTIONS_GH_PRETTYNAME=%s\n' "Continuous Build" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_RELEASE_NAME=%s\n' "Eden Continuous Build - ${{ env.FORGEJO_REF }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_TAG_NAME=%s\n' "v${{ env.TIMESTAMP }}.${{ env.FORGEJO_REF }}" >> $GITHUB_ENV
+              printf 'ACTIONS_GH_REPOSITORY=%s\n' "${{ env.RELEASE_MASTER_REPO }}" >> $GITHUB_ENV
+              ;;
+            ('test')
+              ;;
+            (*)
+              echo "Aborting! Invalid Option!"
+              exit 1
+              ;;
+          esac
 
-      - name: Delete Previous Release
-        if: ${{ (inputs.build-id || '') == 'pull_request' }}
+      - name: Send Release to Github
+        if: ${{ env.GH_TOKEN && (inputs.build-id) != 'test' }}
+        id: release
+        uses: softprops/action-gh-release@v2.5.0
+        with:
+          name: "${{ env.ACTIONS_GH_RELEASE_NAME }}"
+          tag_name: "${{ env.ACTIONS_GH_RELEASE_NAME }}"
+          repository: "${{ env.ACTIONS_GH_REPOSITORY }}"
+          body_path: ./changelog.md
+          prerelease: false
+          draft: false
+          generate_release_notes: false
+          token: ${{ env.GH_TOKEN }}
+          fail_on_unmatched_files: false
+          make_latest: true
+          files: |
+            artifacts/*
+
+      - name: Add Release URL to Summary
+        if: ${{ env.GH_TOKEN && (inputs.build-id) != 'test' }}
+        run: |
+          {
+            echo "## Release Summary"
+            echo ""
+            echo "- View Release on GitHub: [${{ env.ACTIONS_GH_PRETTYNAME }}](${{ steps.release-master.outputs.url }})"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Send release URL to status only for master/pull_request
+        if: ${{ env.FJ_TOKEN && (inputs.build-id) == 'master' || (inputs.build-id) == 'pull_request' }}
+        run: |
+          python3 ./.ci/common/status.py release ${{ steps.release.outputs.url }}
+
+      - name: Delete previous pull_request number
+        if: ${{ (inputs.build-id) == 'pull_request' }}
         run: |
           if [ -n "$GH_TOKEN" ]; then
             gh release delete "$FORGEJO_PR_NUMBER" --repo "$RELEASE_PR_REPO" --cleanup-tag -y
@@ -97,146 +146,32 @@ jobs:
           fi
         continue-on-error: true
 
-      - name: Release Master
-        if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'master' }}
-        id: release
+      - name: Send specific pull_request number to Github
+        if: ${{ env.GH_TOKEN && (inputs.build-id) == 'pull_request' }}
         uses: softprops/action-gh-release@v2.5.0
         with:
-          name: "Eden Master - ${{ env.FORGEJO_REF }}"
-          tag_name: v${{ env.TIMESTAMP }}.${{ env.FORGEJO_REF }}
-          repository: ${{ env.RELEASE_MASTER_REPO }}
+          name: "${{ env.ACTIONS_GH_RELEASE_NAME }}"
+          tag_name: "${{ env.ACTIONS_GH_RELEASE_NAME }}"
+          repository: "${{ env.ACTIONS_GH_REPOSITORY }}"
           body_path: ./changelog.md
           prerelease: false
           draft: false
           generate_release_notes: false
           token: ${{ env.GH_TOKEN }}
-          fail_on_unmatched_files: false
-          make_latest: true
-          files: |
-            artifacts/*
-
-      - name: Release PR (sha)
-        id: release
-        if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'pull_request' }}
-        uses: softprops/action-gh-release@v2.5.0
-        with:
-          name: "${{ env.FORGEJO_PR_TITLE }}"
-          tag_name: ${{ env.FORGEJO_PR_NUMBER }}-${{ env.FORGEJO_REF }}
-          repository: ${{ env.RELEASE_PR_REPO }}
-          body_path: ./changelog.md
-          token: ${{ env.GH_TOKEN }}
-          prerelease: false
-          draft: false
-          generate_release_notes: false
-          fail_on_unmatched_files: false
-          make_latest: true
-          files: |
-            artifacts/*
-
-      - name: Release PR (number)
-        if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'pull_request' }}
-        uses: softprops/action-gh-release@v2.5.0
-        with:
-          name: ${{ env.FORGEJO_PR_TITLE }}
-          tag_name: ${{ env.FORGEJO_PR_NUMBER }}
-          repository: ${{ env.RELEASE_PR_REPO }}
-          body_path: ./changelog.md
-          token: ${{ env.GH_TOKEN }}
-          prerelease: false
-          draft: false
-          generate_release_notes: false
           fail_on_unmatched_files: false
           discussion_category_name: "PRs"
           make_latest: true
-
-      - name: Release Tag
-        if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'tag' }}
-        id: release
-        uses: softprops/action-gh-release@v2.5.0
-        with:
-          name: "Eden ${{ env.FORGEJO_REF }}"
-          tag_name: ${{ env.FORGEJO_REF }}
-          repository: ${{ env.RELEASE_TAG_REPO }}
-          body_path: ./changelog.md
-          prerelease: false
-          draft: true
-          generate_release_notes: false
-          token: ${{ env.GH_TOKEN }}
-          fail_on_unmatched_files: false
-          make_latest: true
           files: |
             artifacts/*
 
-      - name: Release Push
-        if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'push' }}
-        id: release
-        uses: softprops/action-gh-release@v2.5.0
-        with:
-          name: "Eden Continuous Build - ${{ env.FORGEJO_REF }}"
-          tag_name: v${{ env.TIMESTAMP }}.${{ env.FORGEJO_REF }}
-          repository: ${{ env.RELEASE_MASTER_REPO }}
-          body_path: ./changelog.md
-          prerelease: false
-          draft: false
-          generate_release_notes: false
-          token: ${{ env.GH_TOKEN }}
-          fail_on_unmatched_files: false
-          make_latest: true
-          files: |
-            artifacts/*
-
-      - name: Add release URL to summary for master
-        if: ${{ (inputs.build-id || '') == 'master' }}
-        run: |
-          {
-            echo "## Release Summary"
-            echo ""
-            echo "- View Release on GitHub: [Master](${{ steps.release.outputs.url }})"
-            echo ""
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Add release URL to summary for pull_request
-        if: ${{ (inputs.build-id || '') == 'pull_request' }}
-        run: |
-          {
-            echo "## Release Summary"
-            echo ""
-            echo "- View Release on GitHub: [#${{ env.FORGEJO_PR_NUMBER }}](${{ steps.release.outputs.url }})"
-            echo ""
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Add release URL to summary for tag
-        if: ${{ (inputs.build-id || '') == 'tag' }}
-        run: |
-          {
-            echo "## Release Summary"
-            echo ""
-            echo "- View Release on GitHub: [${{ env.FORGEJO_REF }}](${{ steps.release.outputs.url }})"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Add release URL to summary for push
-        if: ${{ (inputs.build-id || '') == 'push' }}
-        run: |
-          {
-            echo "## Release Summary"
-            echo ""
-            echo "- View Release on GitHub: [Continuous Build](${{ steps.release.outputs.url }})"
-            echo ""
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Forgejo Release only on tag
-        if: ${{ env.FJ_TOKEN && (inputs.build-id || '') == 'tag' }}
+      - name: Send Release to Forgejo only on tags
+        if: ${{ env.FJ_TOKEN && (inputs.build-id) == 'tag' }}
         run: |
           ./.ci/fj/release.sh
           echo "- View Release on Forgejo: [${{ env.FORGEJO_REF }}]($(cat url))" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Send release URL to status only for master/pull_request
-        if: ${{ (inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request' }}
-        run: |
-          python3 ./.ci/common/status.py release ${{ steps.release.outputs.url }}
-
-      - name: Upload artifacts only for test
-        if: ${{ (inputs.build-id || '') == 'test' }}
+      - name: Upload changelog artifact only for test
+        if: ${{ (inputs.build-id) == 'test' }}
         uses: actions/upload-artifact@v6.0.0
         with:
           name: changelog
