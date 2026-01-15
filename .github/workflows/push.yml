@@ -24,6 +24,11 @@ jobs:
     name: Push Release
     needs: [build]
     uses: ./.github/workflows/release.yml
+    permissions:
+      actions: read
+      security-events: write
+      contents: write
+      discussions: write
     with:
       build-id: 'push'
     secrets: inherit

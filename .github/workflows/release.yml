@@ -8,9 +8,9 @@ on:
         type: string
         required: true
       devel:
-        description: 'development build'
-        type: string
-        required: true
+        description: 'Development mode (disables update checker, adds nightly qualifier)'
+        type: boolean
+        default: true
 
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}
@@ -20,11 +20,6 @@ env:
 jobs:
   release-status:
     name: "Create Release"
-    permissions:
-      actions: read
-      security-events: write
-      contents: write
-      discussions: write
     env:
       GH_TOKEN: "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
       FJ_TOKEN: "${{ secrets.FORGEJO_TOKEN }}"

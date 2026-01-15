@@ -23,6 +23,11 @@ jobs:
     name: Pull Request Release
     needs: [build]
     uses: ./.github/workflows/release.yml
+    permissions:
+      actions: read
+      security-events: write
+      contents: write
+      discussions: write
     with:
       build-id: 'pull_request'
     secrets: inherit
