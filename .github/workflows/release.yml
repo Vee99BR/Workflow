@@ -50,8 +50,8 @@ jobs:
           export FORGEJO_LENV=forgejo-env/forgejo.env
           . ./.ci/fj/load-env.sh
 
-      - name: Set environment variables for master/test/pull_request
-        if: ${{ ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'test' || (inputs.build-id || '') == 'pull_request') }}
+      - name: Set environment variables for master/test/pull_request/push
+        if: ${{ (inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'test' || (inputs.build-id || '') == 'pull_request' || (inputs.build-id || '') == 'push }}
         run: |
           echo "DEVEL=true" >> $GITHUB_ENV
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
@@ -83,6 +83,10 @@ jobs:
         if: ${{ (inputs.build-id || '') == 'pull_request' }}
         run: ./.ci/changelog/generate.sh pull_request > changelog.md
 
+      - name: Generate changelog for push
+        if: ${{ (inputs.build-id || '') == 'push' }}
+        run: ./.ci/changelog/generate.sh push > changelog.md
+
       - name: Generate changelog for tag
         if: ${{ (inputs.build-id || '') == 'tag' }}
         run: |
@@ -111,7 +115,7 @@ jobs:
           fi
         continue-on-error: true
 
-      - name: Release for Master
+      - name: Release Master
         if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'master' }}
         id: release
         uses: softprops/action-gh-release@v2.5.0
@@ -181,6 +185,24 @@ jobs:
           files: |
             artifacts/*
 
+      - name: Release Push
+        if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'push' }}
+        id: release
+        uses: softprops/action-gh-release@v2.5.0
+        with:
+          name: "Eden Continuous Build - ${{ env.FORGEJO_REF }}"
+          tag_name: v${{ env.TIMESTAMP }}.${{ env.FORGEJO_REF }}
+          repository: ${{ env.RELEASE_MASTER_REPO }}
+          body_path: ./changelog.md
+          prerelease: false
+          draft: false
+          generate_release_notes: false
+          token: ${{ env.GH_TOKEN }}
+          fail_on_unmatched_files: false
+          make_latest: true
+          files: |
+            artifacts/*
+
       - name: Add release URL to summary for master
         if: ${{ (inputs.build-id || '') == 'master' }}
         run: |
@@ -210,18 +232,28 @@ jobs:
             echo "- View Release on GitHub: [${{ env.FORGEJO_REF }}](${{ steps.release.outputs.url }})"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Forgejo Release
+      - name: Add release URL to summary for push
+        if: ${{ (inputs.build-id || '') == 'push' }}
+        run: |
+          {
+            echo "## Release Summary"
+            echo ""
+            echo "- View Release on GitHub: [Continuous Build](${{ steps.release.outputs.url }})"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Forgejo Release only on tag
         if: ${{ env.FJ_TOKEN && (inputs.build-id || '') == 'tag' }}
         run: |
           ./.ci/fj/release.sh
           echo "- View Release on Forgejo: [${{ env.FORGEJO_REF }}]($(cat url))" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Send release URL to status
+      - name: Send release URL to status only for master/pull_request
         if: ${{ (inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request' }}
         run: |
           python3 ./.ci/common/status.py release ${{ steps.release.outputs.url }}
 
-      - name: Upload artifacts
+      - name: Upload artifacts only for test
         if: ${{ (inputs.build-id || '') == 'test' }}
         uses: actions/upload-artifact@v6.0.0
         with:
