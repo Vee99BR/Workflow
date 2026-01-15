@@ -45,7 +45,7 @@ jobs:
           . ./.ci/fj/load-env.sh
 
       - name: Set environment variables for master/test/pull_request/push
-        if: ${{ (inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'test' || (inputs.build-id || '') == 'pull_request' || (inputs.build-id || '') == 'push }}
+        if: ${{ (inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'test' || (inputs.build-id || '') == 'pull_request' || (inputs.build-id || '') == 'push' }}
         run: |
           echo "DEVEL=true" >> $GITHUB_ENV
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
