@@ -26,7 +26,7 @@ env:
   DEVEL: ${{ inputs.devel }}
 
 jobs:
-  and-matrix:
+  android-matrix:
     name: "Generate Android targets"
     runs-on: ubuntu-latest
     outputs:
@@ -50,13 +50,13 @@ jobs:
 
   android:
     name: "Android"
-    needs: [and-matrix]
+    needs: [android-matrix]
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        target: ${{ fromJson(needs.and-matrix.outputs.targets) }}
+        target: ${{ fromJson(needs.android-matrix.outputs.targets) }}
     env:
       TARGET: "${{ matrix.target.flavor }}"
     steps:
