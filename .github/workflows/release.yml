@@ -53,8 +53,24 @@ jobs:
           export ID=${FORGEJO_REF}
           ./.ci/common/pack.sh
 
-      - name: Generate changelog
+      - name: Generate changelog for master/test
+        if: ${{ ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'test') }}
         run: ./.ci/changelog/generate.sh master > changelog.md
+
+      - name: Generate changelog for pull_request
+        if: ${{ (inputs.build-id || '') == 'pull_request' }}
+        run: ./.ci/changelog/generate.sh pull_request > changelog.md
+
+      - name: Delete Previous Release
+        if: ${{ (inputs.build-id || '') == 'pull_request' }}
+        run: |
+          if [ -n "$GH_TOKEN" ]; then
+            gh release delete "$FORGEJO_PR_NUMBER" --repo "$RELEASE_PR_REPO" --cleanup-tag -y
+            sleep 5
+          else
+            echo "No CUSTOM_GITHUB_TOKEN provided, skipping release..."
+          fi
+        continue-on-error: true
 
       - name: Release
         if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'master' }}
@@ -74,6 +90,40 @@ jobs:
           files: |
             artifacts/*
 
+      - name: Release (sha)
+        id: release
+        if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'pull_request' }}
+        uses: softprops/action-gh-release@v2.5.0
+        with:
+          name: "${{ env.FORGEJO_PR_TITLE }}"
+          tag_name: ${{ env.FORGEJO_PR_NUMBER }}-${{ env.FORGEJO_REF }}
+          repository: ${{ env.RELEASE_PR_REPO }}
+          body_path: ./changelog.md
+          token: ${{ env.GH_TOKEN }}
+          prerelease: false
+          draft: false
+          generate_release_notes: false
+          fail_on_unmatched_files: false
+          make_latest: true
+          files: |
+            artifacts/*
+
+      - name: Release (PR)
+        if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'pull_request' }}
+        uses: softprops/action-gh-release@v2.5.0
+        with:
+          name: ${{ env.FORGEJO_PR_TITLE }}
+          tag_name: ${{ env.FORGEJO_PR_NUMBER }}
+          repository: ${{ env.RELEASE_PR_REPO }}
+          body_path: ./changelog.md
+          token: ${{ env.GH_TOKEN }}
+          prerelease: false
+          draft: false
+          generate_release_notes: false
+          fail_on_unmatched_files: false
+          discussion_category_name: "PRs"
+          make_latest: true
+
       - name: Add release URL to summary
         if: ${{ (inputs.build-id || '') == 'master' }}
         run: |
@@ -84,8 +134,18 @@ jobs:
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Add release URL to summary
+        if: ${{ (inputs.build-id || '') == 'pull_request' }}
+        run: |
+          {
+            echo "## Release Summary"
+            echo ""
+            echo "- View Release on GitHub: [#${{ env.FORGEJO_PR_NUMBER }}](${{ steps.release.outputs.url }})"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Send release URL to status
-        if: ${{ (inputs.build-id || '') == 'master' }}
+        if: ${{ (inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request' }}
         run: |
           python3 ./.ci/common/status.py release ${{ steps.release.outputs.url }}
 
