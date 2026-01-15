@@ -1,4 +1,4 @@
-name: "Status and Release"
+name: "Release"
 
 on:
   workflow_call:
