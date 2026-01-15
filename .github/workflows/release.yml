@@ -57,7 +57,7 @@ jobs:
         run: ./.ci/changelog/generate.sh master > changelog.md
 
       - name: Release
-        if: ${{ env.GH_TOKEN }}
+        if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'master' }}
         id: release
         uses: softprops/action-gh-release@v2.5.0
         with:
@@ -75,6 +75,7 @@ jobs:
             artifacts/*
 
       - name: Add release URL to summary
+        if: ${{ (inputs.build-id || '') == 'master' }}
         run: |
           {
             echo "## Release Summary"
@@ -84,6 +85,13 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Send release URL to status
+        if: ${{ (inputs.build-id || '') == 'master' }}
         run: |
           python3 ./.ci/common/status.py release ${{ steps.release.outputs.url }}
 
+      - name: Upload artifacts
+        if: ${{ (inputs.build-id || '') == 'test' }}
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: changelog
+          path: changelog.md
