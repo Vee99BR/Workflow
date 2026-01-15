@@ -19,6 +19,10 @@ on:
         description: 'test PGO builds'
         type: string
         required: true
+      matrix_platform:
+        description: 'matrix platform'
+        type: string
+        required: true
 
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}
@@ -28,30 +32,8 @@ env:
   DEVEL: ${{ inputs.devel }}
 
 jobs:
-  windows-matrix:
-    name: "Generate Windows compilers"
-    runs-on: ubuntu-latest
-    outputs:
-      compiler: ${{ steps.set.outputs.compiler }}
-    steps:
-      - id: set
-        run: |
-          PGO='{"program": "clang", "target": "pgo"}'
-          CLANG='{"program": "clang", "target": "standard"}'
-          MSVC='{"program": "msvc", "target": "standard"}'
-
-          if [ "${{ inputs.devel }}" != "true" ] || [ "${{ inputs.force_pgo }}" = "true" ]; then
-            COMPILER="[${MSVC}]"
-          else
-            COMPILER="[${MSVC}]"
-          fi
-
-          echo $COMPILER
-          echo "compiler=${COMPILER}" >> $GITHUB_OUTPUT
-
   windows:
     name: "Windows ${{ matrix.os.arch }} ${{ matrix.compiler.program }} ${{ matrix.compiler.target }}"
-    needs: [windows-matrix]
     runs-on: ${{ matrix.os.runs-on }}
     strategy:
       fail-fast: false
@@ -59,7 +41,7 @@ jobs:
         os:
           - runs-on: windows-latest
             arch: amd64
-        compiler: ${{ fromJson(needs.windows-matrix.outputs.compiler) }}
+        compiler: ${{ fromJson(inputs.matrix_platform) }}
 
     env:
       QT_VERSION: 6.9.1

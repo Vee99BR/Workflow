@@ -23,6 +23,27 @@ env:
   FORCE_PGO: "false"
 
 jobs:
+  generate-platform:
+    name: Central Platform Generation
+    runs-on: ubuntu-latest
+    outputs:
+      windows-matrix: ${{ steps.windows-matrix.outputs.compiler }}
+    steps:
+      - id: windows-matrix
+        run: |
+          PGO='{"program": "clang", "target": "pgo"}'
+          CLANG='{"program": "clang", "target": "standard"}'
+          MSVC='{"program": "msvc", "target": "standard"}'
+
+          if [ "${{ inputs.devel }}" != "true" ] || [ "${{ inputs.force_pgo }}" = "true" ]; then
+            COMPILER="[${MSVC}]"
+          else
+            COMPILER="[${MSVC}, ${CLANG}]"
+          fi
+
+          echo $COMPILER
+          echo "compiler=${COMPILER}" >> $GITHUB_OUTPUT
+
   clone:
     outputs:
       cachever: ${{ steps.out.outputs.cachever }}
@@ -146,13 +167,14 @@ jobs:
 
   windows:
     name: "Windows"
-    needs: [clone]
+    needs: [clone, generate-platform]
     uses: ./.github/workflows/windows.yml
     with:
       build-id: '${{ inputs.build-id }}'
       cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
       devel: ${{ inputs.devel }}
       force_pgo: ${{ needs.clone.outputs.pgo }}
+      matrix_platform: ${{ needs.generate-platform.outputs.windows-matrix }}
     secrets: inherit
 
   msys:
