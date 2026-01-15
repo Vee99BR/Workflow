@@ -1,0 +1,44 @@
+name: "[Forgejo] Status"
+
+on:
+  workflow_call:
+    inputs:
+      build-id:
+        description: "build id"
+        type: string
+        required: true
+
+env:
+  FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+
+jobs:
+  status-to-fj:
+    name: "Send Commit Status to Forgejo"
+    needs: [source, deb, linux, windows, android, macos, unix, msys]
+    if: ${{ always() && (( cancelled() || failure() || success() )) && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Load payload environment
+        shell: bash
+        run: |
+          . ./.ci/fj/load-env.sh
+
+      - name: Send status when canceled
+        if: ${{ cancelled() }}
+        run: |
+          python3 ./.ci/common/status.py error
+
+      - name: Send status when failed
+        if: ${{ failure() }}
+        run: |
+          python3 ./.ci/common/status.py failure
+
+      - name: Send status when success
+        if: ${{ success() }}
+        run: |
+          python3 ./.ci/common/status.py success
