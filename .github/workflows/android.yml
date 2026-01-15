@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler: ${{ fromJson(inputs.matrix_platform) }}
+        target: ${{ fromJson(inputs.matrix_platform) }}
     env:
       TARGET: "${{ matrix.target.flavor }}"
     steps:
