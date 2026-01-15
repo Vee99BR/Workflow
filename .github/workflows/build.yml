@@ -198,6 +198,7 @@ jobs:
 
   status:
     name: Send Forgejo Status
+    needs: [source, deb, linux, windows, android, macos, unix, msys]
     uses: ./.github/workflows/status.yml
     with:
       build-id: '${{ inputs.build-id }}'

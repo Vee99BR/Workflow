@@ -14,7 +14,6 @@ env:
 jobs:
   status-to-fj:
     name: "Send Commit Status to Forgejo"
-    needs: [source, deb, linux, windows, android, macos, unix, msys]
     if: ${{ always() && (( cancelled() || failure() || success() )) && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
     runs-on: ubuntu-latest
     steps:
