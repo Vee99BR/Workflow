@@ -28,7 +28,7 @@ env:
   DEVEL: ${{ inputs.devel }}
 
 jobs:
-  win-matrix:
+  windows-matrix:
     name: "Generate Windows compilers"
     runs-on: ubuntu-latest
     outputs:
@@ -51,7 +51,7 @@ jobs:
 
   windows:
     name: "Windows ${{ matrix.os.arch }} ${{ matrix.compiler.program }} ${{ matrix.compiler.target }}"
-    needs: [win-matrix]
+    needs: [windows-matrix]
     runs-on: ${{ matrix.os.runs-on }}
     strategy:
       fail-fast: false
@@ -59,7 +59,7 @@ jobs:
         os:
           - runs-on: windows-latest
             arch: amd64
-        compiler: ${{ fromJson(needs.win-matrix.outputs.compiler) }}
+        compiler: ${{ fromJson(needs.windows-matrix.outputs.compiler) }}
 
     env:
       QT_VERSION: 6.9.1

@@ -28,7 +28,7 @@ env:
   DEVEL: ${{ inputs.devel }}
 
 jobs:
-  set-matrix:
+  appimage-matrix:
     name: "Generate AppImage Matrix"
     runs-on: ubuntu-latest
     outputs:
@@ -70,7 +70,7 @@ jobs:
 
   linux:
     name: "AppImage ${{ matrix.os.arch }} ${{ matrix.compiler.program }} ${{ matrix.compiler.target }}"
-    needs: [set-matrix]
+    needs: [appimage-matrix]
     runs-on: ${{ matrix.os.runs-on }}
     container:
       image: ghcr.io/pkgforge-dev/archlinux:latest
@@ -79,8 +79,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
-        compiler: ${{ fromJson(needs.set-matrix.outputs.compiler) }}
+        os: ${{ fromJson(needs.appimage-matrix.outputs.matrix) }}
+        compiler: ${{ fromJson(needs.appimage-matrix.outputs.compiler) }}
 
     env:
       TARGET: "${{ matrix.os.arch }}"
