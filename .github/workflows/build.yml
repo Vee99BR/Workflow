@@ -33,8 +33,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.1
-        with:
-          fetch-depth: 0
 
       - name: Parse Forgejo payload
         shell: bash
@@ -202,13 +200,17 @@ jobs:
     if: ${{ always() && (( cancelled() || failure() || success() )) && ((inputs.build-id || '') == 'master' || (inputs.build-id || '') == 'pull_request') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Download Workflow
         uses: actions/checkout@v6.0.1
+
+      - name: Download Forgejo environment
+        uses: actions/download-artifact@v7.0.0
         with:
-          fetch-depth: 0
+          name: forgejo-env
 
       - name: Load payload environment and send status
         shell: bash
         run: |
+          export FORGEJO_LENV=forgejo.env
           . ./.ci/fj/load-env.sh
           python3 ./.ci/common/status.py --cancelled cancelled() --failure failure() --success success()
