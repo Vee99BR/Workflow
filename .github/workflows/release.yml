@@ -111,7 +111,7 @@ jobs:
 
       - name: Release Master
         if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'master' }}
-        id: release
+        id: release-master
         uses: softprops/action-gh-release@v2.5.0
         with:
           name: "Eden Master - ${{ env.FORGEJO_REF }}"
@@ -128,7 +128,7 @@ jobs:
             artifacts/*
 
       - name: Release PR (sha)
-        id: release
+        id: release-pull_request
         if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'pull_request' }}
         uses: softprops/action-gh-release@v2.5.0
         with:
@@ -163,7 +163,7 @@ jobs:
 
       - name: Release Tag
         if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'tag' }}
-        id: release
+        id: release-tag
         uses: softprops/action-gh-release@v2.5.0
         with:
           name: "Eden ${{ env.FORGEJO_REF }}"
@@ -181,7 +181,7 @@ jobs:
 
       - name: Release Push
         if: ${{ env.GH_TOKEN && (inputs.build-id || '') == 'push' }}
-        id: release
+        id: release-push
         uses: softprops/action-gh-release@v2.5.0
         with:
           name: "Eden Continuous Build - ${{ env.FORGEJO_REF }}"
@@ -203,7 +203,7 @@ jobs:
           {
             echo "## Release Summary"
             echo ""
-            echo "- View Release on GitHub: [Master](${{ steps.release.outputs.url }})"
+            echo "- View Release on GitHub: [Master](${{ steps.release-master.outputs.url }})"
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -213,7 +213,7 @@ jobs:
           {
             echo "## Release Summary"
             echo ""
-            echo "- View Release on GitHub: [#${{ env.FORGEJO_PR_NUMBER }}](${{ steps.release.outputs.url }})"
+            echo "- View Release on GitHub: [#${{ env.FORGEJO_PR_NUMBER }}](${{ steps.release-pull_request.outputs.url }})"
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -223,7 +223,7 @@ jobs:
           {
             echo "## Release Summary"
             echo ""
-            echo "- View Release on GitHub: [${{ env.FORGEJO_REF }}](${{ steps.release.outputs.url }})"
+            echo "- View Release on GitHub: [${{ env.FORGEJO_REF }}](${{ steps.release-tag.outputs.url }})"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Add release URL to summary for push
@@ -232,7 +232,7 @@ jobs:
           {
             echo "## Release Summary"
             echo ""
-            echo "- View Release on GitHub: [Continuous Build](${{ steps.release.outputs.url }})"
+            echo "- View Release on GitHub: [Continuous Build](${{ steps.release-push.outputs.url }})"
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
 
