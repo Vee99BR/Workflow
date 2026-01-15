@@ -39,7 +39,7 @@ jobs:
           if [ "${{ inputs.devel }}" != "true" ] || [ "${{ inputs.force_pgo }}" = "true" ]; then
             COMPILER="[${MSVC}]"
           else
-            COMPILER="[${MSVC}, ${CLANG}]"
+            COMPILER="[${MSVC}]"
           fi
 
           echo $COMPILER
