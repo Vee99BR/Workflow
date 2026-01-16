@@ -43,6 +43,12 @@ jobs:
           cat payload.json
           ./.ci/forgejo.sh --parse ${{ inputs.build-id }}
 
+      - name: Upload payload environment
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: forgejo-env
+          path: forgejo.env
+
       - name: Load payload environment
         shell: bash
         run: |
@@ -83,12 +89,6 @@ jobs:
       - name: Cleanup
         run: |
           rm -rf eden/.git* eden/.ci eden/.github
-
-      - name: Upload payload environment
-        uses: actions/upload-artifact@v6.0.0
-        with:
-          name: forgejo-env
-          path: forgejo.env
 
       - name: Upload cloned repo
         uses: actions/upload-artifact@v6.0.0
