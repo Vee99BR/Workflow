@@ -208,9 +208,13 @@ jobs:
         with:
           name: forgejo-env
 
-      - name: Load payload environment and send status
+      - name: Load payload environment
         shell: bash
         run: |
           export FORGEJO_LENV=forgejo.env
           . ./.ci/fj/load-env.sh
+
+      - name: Send status
+        shell: bash
+        run: |
           python3 ./.ci/common/status.py --cancelled cancelled() --failure failure() --success success()
