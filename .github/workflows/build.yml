@@ -30,6 +30,7 @@ jobs:
       windows-matrix: ${{ steps.windows-matrix.outputs.compiler }}
       android-matrix: ${{ steps.android-matrix.outputs.targets }}
       debian-matrix: ${{ steps.debian-matrix.outputs.matrix }}
+      msys-matrix: ${{ steps.msys-matrix.outputs.include }}
     steps:
       - id: windows-matrix
         run: |
@@ -73,6 +74,41 @@ jobs:
 
           echo $MATRIX
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
+
+      - id: msys-matrix
+        run: |
+          AMD64='"runs-on": "windows-latest", "arch": "amd64", "msystem": "MINGW64"'
+          UCRT64='"runs-on": "windows-latest", "arch": "amd64", "msystem": "UCRT64"'
+          AMDCLANG64='"runs-on": "windows-latest", "arch": "amd64", "msystem": "CLANG64"'
+          ARM64='"runs-on": "windows-11-arm", "arch": "arm64", "msystem": "CLANGARM64"'
+
+          PGO='"program": "clang", "target": "pgo"'
+          CLANG='"program": "clang", "target": "standard"'
+          GCC='"program": "gcc", "target": "standard"'
+          UCRT='"program": "gcc", "target": "ucrt"'
+
+          target() {
+            arch="$1"
+            compiler="$2"
+
+            echo "{${arch}, ${compiler}}"
+          }
+
+          amd_gcc="$(target "$AMD64" "$GCC")"
+          ucrt_gcc="$(target "$UCRT64" "$UCRT")"
+          amd_clang="$(target "$AMDCLANG64" "$CLANG")"
+          amd_pgo="$(target "$AMD64" "$PGO")"
+          arm_clang="$(target "$ARM64" "$CLANG")"
+          arm_pgo="$(target "$ARM64" "$PGO")"
+
+          if [ "${{ inputs.devel }}" != "true" ] || [ "${{ inputs.force_pgo }}" = "true" ]; then
+            INCLUDE="[${amd_gcc}, ${arm_clang}, ${amd_pgo}, ${arm_pgo}]"
+          else
+            INCLUDE="[${amd_gcc}, ${arm_clang}]"
+          fi
+
+          echo $INCLUDE
+          echo "include=${INCLUDE}" >> $GITHUB_OUTPUT
 
   clone:
     outputs:
@@ -208,13 +244,14 @@ jobs:
 
   msys:
     name: "MinGW"
-    needs: [clone]
+    needs: [clone, generate-platform]
     uses: ./.github/workflows/msys.yml
     with:
       build-id: '${{ inputs.build-id }}'
       cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
       devel: ${{ inputs.devel }}
       force_pgo: ${{ needs.clone.outputs.pgo }}
+      matrix_platform: ${{ needs.generate-platform.outputs.msys-matrix }}
     secrets: inherit
 
   android:
