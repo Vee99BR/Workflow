@@ -7,34 +7,18 @@ on:
         description: 'Identifier for workflows and caching'
         type: string
         required: true
+      status:
+        description: 'Last build status outcome to send to Forgejo'
+        type: string
+        required: true
 
 env:
   FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
 
 jobs:
-  cancelled:
-    name: Cancelled
-    if: ${{ always() && cancelled() && ((inputs.build-id) == 'master' || (inputs.build-id) == 'pull_request') }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Workflow
-        uses: actions/checkout@v6.0.1
-
-      - name: Download Forgejo environment
-        uses: actions/download-artifact@v7.0.0
-        with:
-          name: forgejo-env
-
-      - name: Send status if cancelled()
-        if: ${{ cancelled() }}
-        shell: bash
-        run: |
-          FORGEJO_LENV=forgejo.env . ./.ci/fj/load-env.sh
-          python3 ./.ci/common/status.py --cancelled true
-
-  failure:
-    name: Failure
-    if: ${{ always() && failure() && ((inputs.build-id) == 'master' || (inputs.build-id) == 'pull_request') }}
+  status-to-forgejo:
+    name: Send Status
+    if: ${{ ((inputs.build-id) == 'master' || (inputs.build-id) == 'pull_request') }}
     runs-on: ubuntu-latest
     steps:
       - name: Download Workflow
@@ -49,23 +33,4 @@ jobs:
         shell: bash
         run: |
           FORGEJO_LENV=forgejo.env . ./.ci/fj/load-env.sh
-          python3 ./.ci/common/status.py --failure true
-
-  success:
-    name: Success
-    if: ${{ always() && success() && ((inputs.build-id) == 'master' || (inputs.build-id) == 'pull_request') }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Workflow
-        uses: actions/checkout@v6.0.1
-
-      - name: Download Forgejo environment
-        uses: actions/download-artifact@v7.0.0
-        with:
-          name: forgejo-env
-
-      - name: Send status
-        shell: bash
-        run: |
-          FORGEJO_LENV=forgejo.env . ./.ci/fj/load-env.sh
-          python3 ./.ci/common/status.py --success true
+          python3 ./.ci/common/status.py --${{ inputs.status }} true

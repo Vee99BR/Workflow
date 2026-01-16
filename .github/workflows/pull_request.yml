@@ -27,6 +27,7 @@ jobs:
     uses: ./.github/workflows/status.yml
     with:
       build-id: 'pull_request'
+      status: ${{ needs.build.result }}
     secrets: inherit
 
   release:
