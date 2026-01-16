@@ -29,6 +29,7 @@ jobs:
     outputs:
       windows-matrix: ${{ steps.windows-matrix.outputs.compiler }}
       android-matrix: ${{ steps.android-matrix.outputs.targets }}
+      debian-matrix: ${{ steps.debian-matrix.outputs.matrix }}
     steps:
       - id: windows-matrix
         run: |
@@ -59,6 +60,20 @@ jobs:
 
           echo $TARGETS
           echo "targets=${TARGETS}" >> $GITHUB_OUTPUT
+      - id: debian-matrix
+        run: |
+          BASE='{"runs-on": "ubuntu-24.04",     "arch": "amd64"}'
+          ARM=' {"runs-on": "ubuntu-24.04-arm", "arch": "aarch64"}'
+
+          if [ "${{ inputs.build-id }}" = "tag" ]; then
+            MATRIX="[${BASE}, ${ARM}]"
+          else
+            MATRIX="[${BASE}]"
+          fi
+
+          echo $MATRIX
+          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
+
   clone:
     outputs:
       cachever: ${{ steps.out.outputs.cachever }}
@@ -159,12 +174,13 @@ jobs:
 
   deb:
     name: ".deb builds"
-    needs: [clone]
+    needs: [clone, generate-platform]
     uses: ./.github/workflows/deb.yml
     with:
       build-id: '${{ inputs.build-id }}'
       cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
       devel: ${{ inputs.devel }}
+      matrix_platform: ${{ needs.generate-platform.outputs.debian-matrix }}
     secrets: inherit
 
   linux:
