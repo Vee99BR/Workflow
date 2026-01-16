@@ -61,7 +61,11 @@ def send_commit_status(state: str, release_url: str | None = None):
         "pending": "Build started",
         "success": "Build succeeded",
         "failure": "Build failed",
+        "error": "Build cancelled",
         "cancelled": "Build cancelled"
+        # <https://forgejo.your.host/api/swagger#/repository/repoListStatusesByRef>
+        # TODO: Add Warning (forgejo only)
+        #"warning: "???""
     }
 
     if state not in description_mapping:
@@ -70,6 +74,10 @@ def send_commit_status(state: str, release_url: str | None = None):
     if state == "release" and not release_url:
         print("[ERROR] Missing release_url, skipping commit status.")
         return
+    # TODO: Make it only when from Github -> Forgejo
+    # DraVee: Forgejo dont have cancelled, switch to error
+    if state == "cancelled":
+        state = "error"
     if state == "release" and release_url:
         target_state = "success"
         target_url = release_url
@@ -114,6 +122,10 @@ def parse_args():
     parser.add_argument("--success", metavar="BOOL")
     parser.add_argument("--failure", metavar="BOOL")
     parser.add_argument("--cancelled", metavar="BOOL")
+    parser.add_argument("--error", metavar="BOOL")
+    # <https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#needs-context>
+    # TODO: Add skipped (github only)
+    #parser.add_argument("--skipped", metavar="BOOL")
     parser.add_argument("--release", metavar="URL", help="Set commit status to release with URL")
 
     if len(sys.argv) == 1:
@@ -129,6 +141,7 @@ def parse_args():
         "pending": is_truthy(args.pending),
         "success": is_truthy(args.success),
         "failure": is_truthy(args.failure),
+        "error": is_truthy(args.error),
         "cancelled": is_truthy(args.cancelled),
     }
 
@@ -136,9 +149,11 @@ def parse_args():
         return "failure", None
     if flags["cancelled"]:
         return "cancelled", None
+    if flags["error"]:
+        return "error", None
     if flags["pending"]:
         return "pending", None
-    if flags["success"] and not any(flags[k] for k in ("pending", "failure", "cancelled")):
+    if flags["success"] and not any(flags[k] for k in ("pending", "failure", "cancelled", "error")):
         return "success", None
 
     parser.print_help()
