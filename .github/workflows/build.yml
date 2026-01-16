@@ -31,6 +31,8 @@ jobs:
       android-matrix: ${{ steps.android-matrix.outputs.targets }}
       debian-matrix: ${{ steps.debian-matrix.outputs.matrix }}
       msys-matrix: ${{ steps.msys-matrix.outputs.include }}
+      appimage-matrix: ${{ steps.appimage-matrix.outputs.matrix }}
+      appimage-compiler:  ${{ steps.appimage-matrix.outputs.compiler }}
     steps:
       - id: windows-matrix
         run: |
@@ -109,6 +111,39 @@ jobs:
 
           echo $INCLUDE
           echo "include=${INCLUDE}" >> $GITHUB_OUTPUT
+
+      - id: appimage-matrix
+        run: |
+          BASE='[{"runs-on": "ubuntu-latest", "arch": "amd64"},{"runs-on": "ubuntu-latest", "arch": "steamdeck"}'
+          ARM=',{"runs-on": "ubuntu-24.04-arm", "arch": "aarch64"}'
+
+          if [ "${{ env.DISABLE_ARM }}" != true ]; then
+            BASE="${BASE}${ARM}"
+          fi
+
+          EXTRA=',{"runs-on": "ubuntu-latest", "arch": "legacy"},{"runs-on": "ubuntu-latest", "arch": "rog-ally"}'
+
+          if [ "${{ inputs.devel }}" != "true" ]; then
+            MATRIX="${BASE}${EXTRA}]"
+          else
+            MATRIX="${BASE}]"
+          fi
+
+          echo $MATRIX
+          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
+
+          PGO='{"program": "clang", "target": "pgo"}'
+          CLANG='{"program": "clang", "target": "standard"}'
+          GCC='{"program": "gcc", "target": "standard"}'
+
+          if [ "${{ inputs.devel }}" != "true" ] || [ "${{ inputs.force_pgo }}" = "true" ]; then
+            COMPILER="[${GCC},${PGO}]"
+          else
+            COMPILER="[${GCC}]"
+          fi
+
+          echo $COMPILER
+          echo "compiler=${COMPILER}" >> $GITHUB_OUTPUT
 
   clone:
     outputs:
@@ -221,13 +256,15 @@ jobs:
 
   linux:
     name: "AppImage"
-    needs: [clone]
+    needs: [clone, generate-platform]
     uses: ./.github/workflows/appimage.yml
     with:
       build-id: '${{ inputs.build-id }}'
       cpm-cache-version: '${{ needs.clone.outputs.cachever }}'
       devel: ${{ inputs.devel }}
       force_pgo: ${{ needs.clone.outputs.pgo }}
+      matrix: ${{ needs.generate-platform.outputs.appimage-matrix }}
+      compiler: ${{ needs.generate-platform.outputs.appimage-compiler }}
     secrets: inherit
 
   windows:
