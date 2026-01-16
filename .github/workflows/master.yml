@@ -17,6 +17,15 @@ jobs:
       build-id: 'master'
     secrets: inherit
 
+  status:
+    name: Forgejo Status
+    needs: [build]
+    if: ${{ always() }}
+    uses: ./.github/workflows/status.yml
+    with:
+      build-id: 'master'
+    secrets: inherit
+
   release:
     name: Master Release
     needs: [build]

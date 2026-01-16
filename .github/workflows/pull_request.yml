@@ -20,6 +20,15 @@ jobs:
       build-id: 'pull_request'
     secrets: inherit
 
+  status:
+    name: Forgejo Status
+    needs: [build]
+    if: ${{ always() }}
+    uses: ./.github/workflows/status.yml
+    with:
+      build-id: 'pull_request'
+    secrets: inherit
+
   release:
     name: Pull Request Release
     needs: [build]
