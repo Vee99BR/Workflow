@@ -6,11 +6,11 @@ on:
       devel:
         description: 'Development mode (disables update checker, adds nightly qualifier)'
         type: boolean
-        default: true
+        required: true
       build-id:
         description: 'Identifier for workflows and caching'
         type: string
-        default: 'master'
+        required: true
 
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}

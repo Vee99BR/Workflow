@@ -3,14 +3,14 @@ name: "Release"
 on:
   workflow_call:
     inputs:
-      build-id:
-        description: "build id"
-        type: string
-        required: true
       devel:
         description: 'Development mode (disables update checker, adds nightly qualifier)'
         type: boolean
-        default: true
+        required: true
+      build-id:
+        description: 'Identifier for workflows and caching'
+        type: string
+        required: true
 
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}

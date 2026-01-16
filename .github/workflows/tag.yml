@@ -29,5 +29,6 @@ jobs:
       contents: write
       discussions: write
     with:
+      devel: false
       build-id: 'tag'
     secrets: inherit
