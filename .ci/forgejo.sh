@@ -15,7 +15,7 @@ touch "$FORGEJO_LENV"
 
 repository_helper() {
     HELPER_URL=$1
-    HELPER_FOLDER=$2
+    [ -n "$2" ] && HELPER_FOLDER=$2
 
     MAX_TRIES=7
     TRIES=0
@@ -24,9 +24,7 @@ repository_helper() {
         if ! curl -fsSL "$HELPER_URL" >/dev/null 2>&1; then
             echo "[WARN] '$HELPER_URL' is not reachable."
         else
-            if [ "$HELPER_FOLDER" == "" ]; then
-                return 0
-            fi
+            [ -z "$HELPER_FOLDER" ] && return 0
             if git clone "$HELPER_URL" "$HELPER_FOLDER"; then
                 return 0
             fi
