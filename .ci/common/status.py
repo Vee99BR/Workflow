@@ -22,16 +22,17 @@ GITHUB_REPOSITORY = os.getenv("GITHUB_REPOSITORY")
 GITHUB_RUN_ID = os.getenv("GITHUB_RUN_ID")
 GITHUB_RUN_ATTEMPT = os.getenv("GITHUB_RUN_ATTEMPT", "1")
 
+# References:
+# <https://git.eden-emu.dev/api/swagger#/repository/repoListStatusesByRef>
+# <https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#needs-context>
+# <https://docs.github.com/pt/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/about-status-checks#check-statuses-and-conclusions>
 ACTIONS_DESCRIPTION_MAPPING = {
-    "release": "[CD] Build succeeded – Release published",
+    "release": "[CD] Build succeeded – Release published", # release -> success
     "pending": "[CI] Build started",
     "success": "[CI] Build succeeded",
     "failure": "[CI] Build failed",
-    "error": "[CI] Build cancelled",
-    "cancelled": "[CI] Build cancelled"
-    # <https://forgejo.your.host/api/swagger#/repository/repoListStatusesByRef>
-    # TODO: Add Warning (forgejo only)
-    #"warning: "???""
+    "error": "[CI] Build cancelled", # (forgejo only)
+    "cancelled": "[CI] Build cancelled" # (github only)
 }
 
 # Send commit status
@@ -93,53 +94,22 @@ def send_commit_status(state: str, release_url: str | None = None):
     except Exception as e:
         print(f"[ERROR] Exception while sending commit status: {e}")
 
-def is_truthy(value):
-    if value is None:
-        return False
-    return str(value).lower() in ("1", "true", "yes", "on")
-
 def parse_args():
-    parser = argparse.ArgumentParser(description="Send commit status to the repository")
-    parser.add_argument("--pending", metavar="BOOL")
-    parser.add_argument("--success", metavar="BOOL")
-    parser.add_argument("--failure", metavar="BOOL")
-    parser.add_argument("--cancelled", metavar="BOOL")
-    parser.add_argument("--error", metavar="BOOL")
-    # <https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#needs-context>
-    # TODO: Add skipped (github only)
-    #parser.add_argument("--skipped", metavar="BOOL")
-    parser.add_argument("--release", metavar="URL", help="Set commit status to release with URL")
-
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(0)
+    parser = argparse.ArgumentParser(description="Send CI/CD build status to Forgejo commit")
+    group = parser.add_mutually_exclusive_group(required=True)
+    for state, description in ACTIONS_DESCRIPTION_MAPPING.items():
+        if state == "release":
+            group.add_argument("--release", metavar="URL", nargs=1, help=f"Send '{description}' and release link to Forgejo")
+        else:
+            group.add_argument(f"--{state}", action="store_true", help=f"Send status '{description}' to Forgejo")
 
     args = parser.parse_args()
+    for state in ACTIONS_DESCRIPTION_MAPPING:
+        value = getattr(args, state)
+        if value:
+            return state, value[0] if state == "release" else None
 
-    if args.release:
-        return "release", args.release
-
-    flags = {
-        "pending": is_truthy(args.pending),
-        "success": is_truthy(args.success),
-        "failure": is_truthy(args.failure),
-        "error": is_truthy(args.error),
-        "cancelled": is_truthy(args.cancelled),
-    }
-
-    if flags["failure"]:
-        return "failure", None
-    if flags["cancelled"]:
-        return "cancelled", None
-    if flags["error"]:
-        return "error", None
-    if flags["pending"]:
-        return "pending", None
-    if flags["success"] and not any(flags[k] for k in ("pending", "failure", "cancelled", "error")):
-        return "success", None
-
-    parser.print_help()
-    sys.exit(0)
+    parser.error("No status selected")
 
 if __name__ == "__main__":
     state, release_url = parse_args()
