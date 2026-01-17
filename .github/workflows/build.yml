@@ -11,6 +11,14 @@ on:
         description: 'Identifier for workflows and caching'
         type: string
         required: true
+      test-ref:
+        description: 'Override (hash reference) commit for test build'
+        type: string
+        default: ''
+      test-before:
+        description: 'Override (hash reference)-1 commit for test build'
+        type: string
+        default: ''
 
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}
@@ -156,7 +164,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6.0.1
 
+      - name: "Override for 'test' build"
+        if: {{ inputs.test-ref }}
+        shell: bash
+        run: |
+          echo ' { "before": "{{ inputs.test-before}}", "ref": "{{ inputs.test-ref }}" }' > ./payload.json
+          cat payload.json
+          ./.ci/forgejo.sh --parse ${{ inputs.build-id }}
+
       - name: Parse Forgejo payload
+        if: {{ inputs.test-ref != '' }}
         shell: bash
         run: |
           echo '${{ toJSON(github.event.client_payload) }}' > ./payload.json
