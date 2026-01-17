@@ -5,7 +5,26 @@ on:
     branches:
       - '*'
   workflow_dispatch:
-
+    inputs:
+      devel:
+        description: 'Development mode (disables update checker, adds nightly qualifier)'
+        type: boolean
+        default: true
+      build-id:
+        description: 'Identifier for workflows and caching'
+        type: choice
+        default: test
+        options: 
+          - test
+          - master
+      test-ref:
+        description: 'Override (hash reference) commit for test build'
+        type: string
+        default: ''
+      test-before:
+        description: 'Override (hash reference)-1 commit for test build'
+        type: string
+        default: ''
 env:
   DISABLE_ARM: ${{ vars.DISABLE_ARM }}
 
