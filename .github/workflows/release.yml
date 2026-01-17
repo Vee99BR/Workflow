@@ -130,7 +130,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Send release URL to status only for master/pull_request
-        if: ${{ env.FJ_TOKEN && (inputs.build-id) == 'master' || (inputs.build-id) == 'pull_request' }}
+        if: ${{ env.FORGEJO_TOKEN && (inputs.build-id) == 'master' || (inputs.build-id) == 'pull_request' }}
         run: |
           python3 ./.ci/common/status.py --release ${{ steps.release.outputs.url }}
 
@@ -160,7 +160,7 @@ jobs:
             artifacts/*
 
       - name: Send Release to Forgejo only on tags
-        if: ${{ env.FJ_TOKEN && (inputs.build-id) == 'tag' }}
+        if: ${{ env.FORGEJO_TOKEN && (inputs.build-id) == 'tag' }}
         run: |
           ./.ci/fj/release.sh
           echo "- View Release on Forgejo: [${{ env.FORGEJO_REF }}]($(cat url))" >> "$GITHUB_STEP_SUMMARY"
