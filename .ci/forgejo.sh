@@ -13,6 +13,40 @@ ROOTDIR="$PWD"
 FORGEJO_LENV=${FORGEJO_LENV:-"forgejo.env"}
 touch "$FORGEJO_LENV"
 
+repository_helper() {
+    HELPER_URL=$1
+    HELPER_FOLDER=$2
+
+    MAX_TRIES=7
+    TRIES=0
+    TIMEOUT=4
+    while :; do
+        if ! curl -fsSL "$HELPER_URL" >/dev/null 2>&1; then
+            echo "[WARN] '$HELPER_URL' is not reachable."
+        else
+            if [ "$HELPER_FOLDER" == "" ]; then
+                return 0
+            fi
+            if git clone "$HELPER_URL" "$HELPER_FOLDER"; then
+                return 0
+            fi
+
+            echo "[WARN] Failed to clone '$HELPER_URL'."
+            rm -rf "./$HELPER_FOLDER" || true
+        fi
+
+        TRIES=$((TRIES + 1))
+        if [ "$TRIES" -ge "$MAX_TRIES" ]; then
+            echo "[ERROR] Failed after $TRIES tries."
+            exit 1
+        fi
+
+        echo "[WARN] Trying again in ${TIMEOUT}s..."
+        sleep "$TIMEOUT"
+        TIMEOUT=$((TIMEOUT * 2))
+    done
+}
+
 parse_payload() {
 	DEFAULT_JSON=".ci/default.json"
 	RELEASE_JSON=".ci/release.json"
@@ -69,20 +103,7 @@ parse_payload() {
 
 	[ -z "$FORGEJO_CLONE_URL" ] && FORGEJO_CLONE_URL="https://$FORGEJO_HOST/$FORGEJO_REPO.git"
 
-	TRIES=0
-	while ! curl -vv -sSfL "$FORGEJO_CLONE_URL" >/dev/null 2>&1; do
-		echo "Repository $FORGEJO_CLONE_URL is unreachable."
-		echo "Check URL or authentication."
-
-		TRIES=$((TRIES + 1))
-		if [ "$TRIES" = 10 ]; then
-			echo "Failed to reach $FORGEJO_CLONE_URL after ten tries. Exiting."
-			exit 1
-		fi
-
-		sleep 5
-		echo "Trying again..."
-	done
+	repository_helper "$FORGEJO_CLONE_URL"
 
 	# Export those variables to be used by field.py
 	export FORGEJO_HOST
@@ -155,28 +176,7 @@ parse_payload() {
 }
 
 clone_repository() {
-	if ! curl -sSfL "$FORGEJO_CLONE_URL" >/dev/null 2>&1; then
-		echo "Repository $FORGEJO_CLONE_URL is not reachable."
-		echo "Check URL or authentication."
-		echo
-		exit 1
-	fi
-
-	TRIES=0
-	while ! git clone "$FORGEJO_CLONE_URL" ${PROJECT_REPO}; do
-		echo "Repository $FORGEJO_CLONE_URL is not reachable."
-		echo "Check URL or authentication."
-
-		TRIES=$((TRIES + 1))
-		if [ "$TRIES" = 10 ]; then
-			echo "Failed to clone $FORGEJO_CLONE_URL after ten tries. Exiting."
-			exit 1
-		fi
-
-		sleep 5
-		echo "Trying clone again..."
-		rm -rf "./${PROJECT_REPO}" || true
-	done
+	repository_helper "$FORGEJO_CLONE_URL" "${PROJECT_REPO}"
 
 	if ! git -C "${PROJECT_REPO}" checkout "$FORGEJO_REF"; then
 		echo "Ref $FORGEJO_REF not found locally, trying to fetch..."
