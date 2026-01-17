@@ -23,12 +23,12 @@ GITHUB_RUN_ID = os.getenv("GITHUB_RUN_ID")
 GITHUB_RUN_ATTEMPT = os.getenv("GITHUB_RUN_ATTEMPT", "1")
 
 ACTIONS_DESCRIPTION_MAPPING = {
-    "release": "Build succeeded – Release published",
-    "pending": "Build started",
-    "success": "Build succeeded",
-    "failure": "Build failed",
-    "error": "Build cancelled",
-    "cancelled": "Build cancelled"
+    "release": "[CD] Build succeeded – Release published",
+    "pending": "[CI] Build started",
+    "success": "[CI] Build succeeded",
+    "failure": "[CI] Build failed",
+    "error": "[CI] Build cancelled",
+    "cancelled": "[CI] Build cancelled"
     # <https://forgejo.your.host/api/swagger#/repository/repoListStatusesByRef>
     # TODO: Add Warning (forgejo only)
     #"warning: "???""
@@ -37,13 +37,13 @@ ACTIONS_DESCRIPTION_MAPPING = {
 # Send commit status
 def send_commit_status(state: str, release_url: str | None = None):
     """Send build status to the last commit of the PR."""
-    if not FORGEJO_TOKEN:
+    if not (FORGEJO_TOKEN):
         print("[ERROR] FORGEJO_TOKEN not set, skipping requests.")
         return False
     if not (FORGEJO_REPO and FORGEJO_REF and FORGEJO_TOKEN):
         print("[ERROR] Missing Forgejo repository or commit info, cannot send commit status.")
         return
-    if GITHUB_REPOSITORY and GITHUB_RUN_ID:
+    if not (GITHUB_REPOSITORY and GITHUB_RUN_ID):
         print("[ERROR] Missing GitHub repository, cannot build workflow link, skipping status.")
         return
     if state not in ACTIONS_DESCRIPTION_MAPPING:
@@ -62,22 +62,20 @@ def send_commit_status(state: str, release_url: str | None = None):
     if state == "cancelled":
         state = "error"
 
-    if state == "release" and release_url:
+    if state == "release":
         target_state = "success"
         target_url = release_url
-        target_description = "[CD]"
-        target_context = "Releases"
+        target_context = "GitHub Releases"
     else:
         target_state = state
         target_url = workflow_url
-        target_description = "[CI]"
-        target_context = "Actions"
+        target_context = "GitHub Actions"
 
     data = {
         "state": target_state,
         "target_url": target_url,
-        "description": f"{target_description} {ACTIONS_DESCRIPTION_MAPPING[state]}",
-        "context": f"GitHub {target_context}"
+        "description": ACTIONS_DESCRIPTION_MAPPING[state],
+        "context": target_context
     }
 
     headers = {"Authorization": f"token {FORGEJO_TOKEN}", "Content-Type": "application/json"}
