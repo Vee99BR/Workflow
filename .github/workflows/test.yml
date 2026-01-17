@@ -44,6 +44,16 @@ jobs:
       test-before: ${{ inputs.test-before }}
     secrets: inherit
 
+  status:
+    name: Forgejo Status
+    needs: [build]
+    if: ${{ always() && inputs.build-id == 'master' }}
+    uses: ./.github/workflows/status.yml
+    with:
+      build-id: ${{ inputs.build-id }}
+      status: ${{ needs.build.result }}
+    secrets: inherit
+
   release:
     name: Test Release
     needs: [build]
