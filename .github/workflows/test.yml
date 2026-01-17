@@ -17,6 +17,7 @@ on:
         options: 
           - test
           - master
+          # - dummy
       test-ref:
         description: 'Override (hash reference) commit for test build'
         type: string
@@ -39,6 +40,8 @@ jobs:
     with:
       devel: true
       build-id: ${{ inputs.build-id }}
+      test-ref: ${{ inputs.test-ref }}
+      test-before: ${{ inputs.test-before }}
     secrets: inherit
 
   release:
