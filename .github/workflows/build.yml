@@ -163,15 +163,15 @@ jobs:
         uses: actions/checkout@v6.0.1
 
       - name: Override for test build
-        if: {{ inputs.test-ref }}
         shell: bash
+        if: ${{ inputs.test-ref }}
         run: |
-          echo ' { "before": "{{ inputs.test-before}}", "ref": "{{ inputs.test-ref }}" }' > ./payload.json
+          echo ' { "before": "${{ inputs.test-before}}", "ref": "${{ inputs.test-ref }}" }' > ./payload.json
           cat payload.json
           ./.ci/forgejo.sh --parse ${{ inputs.build-id }}
 
       - name: Parse Forgejo payload
-        if: {{ ! inputs.test-ref }}
+        if: ${{ ! inputs.test-ref }}
         shell: bash
         run: |
           echo '${{ toJSON(github.event.client_payload) }}' > ./payload.json
