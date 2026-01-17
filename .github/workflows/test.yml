@@ -1,4 +1,4 @@
-name: "[Manual] Workflow PR"
+name: "[Manual] Workflow for Test"
 
 on:
   pull_request:
@@ -38,7 +38,7 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       devel: true
-      build-id: 'test'
+      build-id: ${{ inputs.build-id }}
     secrets: inherit
 
   release:
@@ -52,5 +52,5 @@ jobs:
       discussions: write
     with:
       devel: true
-      build-id: 'test'
+      build-id: ${{ inputs.build-id }}
     secrets: inherit
