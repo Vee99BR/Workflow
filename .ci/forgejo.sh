@@ -1,4 +1,4 @@
-#!/bin/sh -ex
+#!/bin/sh -e
 
 # SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -70,7 +70,7 @@ parse_payload() {
 	[ -z "$FORGEJO_CLONE_URL" ] && FORGEJO_CLONE_URL="https://$FORGEJO_HOST/$FORGEJO_REPO.git"
 
 	TRIES=0
-	while ! curl -vsSfL "$FORGEJO_CLONE_URL" >/dev/null 2>&1; do
+	while ! curl -vv -sSfL "$FORGEJO_CLONE_URL" >/dev/null 2>&1; do
 		echo "Repository $FORGEJO_CLONE_URL is unreachable."
 		echo "Check URL or authentication."
 
