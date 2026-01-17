@@ -40,7 +40,6 @@ jobs:
 
       - name: Set environment variables for master/test/pull_request/push
         if: ${{ (inputs.build-id) != 'tag' }}
-
         run: |
           echo "DEVEL=true" >> $GITHUB_ENV
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
@@ -136,14 +135,10 @@ jobs:
           python3 ./.ci/common/status.py --release ${{ steps.release.outputs.url }}
 
       - name: Delete previous pull_request number
-        if: ${{ (inputs.build-id) == 'pull_request' }}
+        if: ${{ env.GH_TOKEN && (inputs.build-id) == 'pull_request' }}
         run: |
-          if [ -n "$GH_TOKEN" ]; then
-            gh release delete "$FORGEJO_PR_NUMBER" --repo "$RELEASE_PR_REPO" --cleanup-tag -y
-            sleep 5
-          else
-            echo "No CUSTOM_GITHUB_TOKEN provided, skipping release..."
-          fi
+          gh release delete "$FORGEJO_PR_NUMBER" --repo "$RELEASE_PR_REPO" --cleanup-tag -y
+          sleep 5
         continue-on-error: true
 
       - name: Send specific pull_request number to Github
